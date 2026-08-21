@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "sites": [
+    {
+      "id": "osaka-east-home-guide",
+      "title": "大阪东线置业研究所",
+      "description": "以门真市站通勤为核心的大阪谷町线与京阪本线购房区域研究",
+      "path": "sites/osaka-east-home-guide",
+      "stack": [
+        "React",
+        "vinext",
+        "TypeScript"
+      ],
+      "status": "active"
+    }
+  ]
+}
