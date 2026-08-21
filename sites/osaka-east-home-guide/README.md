@@ -19,6 +19,14 @@ npm run dev
 npm run build
 ```
 
+## 单文件离线版
+
+运行 `npm run build:offline` 后，会生成：
+
+`offline/osaka-east-home-guide.html`
+
+这个 HTML 已内嵌页面所需的样式、脚本与数据，可以复制到电脑、手机或平板后直接离线打开。页面中的外部来源链接仅在点击访问时需要联网。
+
 ## 数据口径
 
 - 价格区间整理日期：2026-08-21。
