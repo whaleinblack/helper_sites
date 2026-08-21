@@ -18,6 +18,11 @@ const [css, javascript] = await Promise.all([
 ]);
 
 const safeJavascript = javascript.replaceAll("</script", "<\\/script");
+
+if (/\bprocess\.env\b|\brequire\s*\(/.test(javascript)) {
+  throw new Error("Standalone JavaScript contains a server-only runtime reference.");
+}
+
 const html = `<!doctype html>
 <html lang="zh-CN">
   <head>
