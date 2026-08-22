@@ -1,0 +1,12 @@
+.scenes-theme{--ct-ink:#162824;--ct-paper:#f4f0e7;--ct-red:#a64b38;--ct-mint:#d4e4d9;--ct-gold:#d5b66d}
+.wellith-theme{--ct-ink:#17262e;--ct-paper:#f1eee7;--ct-red:#b95f45;--ct-mint:#d5e4e7;--ct-gold:#d3b978}
+.scenes-theme .concept-story{background:#dbe7dc}.wellith-theme .concept-story{background:#d7e3e8}
+.scenes-theme .commute-story{background:#d8c486}.wellith-theme .commute-story{background:#c9dce3}
+.scenes-theme .sports-story{background:#d0e6d8}.wellith-theme .sports-story{background:#d6e6df}
+.showcase-note{margin-top:1.2rem;padding:1rem 1.2rem;border-left:4px solid var(--ct-red);background:rgba(255,255,255,.68);font-size:.78rem!important}
+.showcase-score{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:2.5rem;background:rgba(16,36,31,.18)}
+.showcase-score span{background:rgba(255,255,255,.66);padding:1.2rem;font-size:.72rem}.showcase-score b{display:block;font:500 2.4rem Georgia,serif;color:var(--ct-red);margin-bottom:.25rem}
+.amenity-gallery.two-up{grid-template-columns:1.25fr 1fr}.amenity-gallery.two-up figure:first-child{grid-column:auto}
+.map-poi-icon.park{background:#4c8b5e}
+.wellith-theme .story-nav:after,.scenes-theme .story-nav:after{display:none}
+@media(max-width:760px){.showcase-score{grid-template-columns:1fr 1fr}.amenity-gallery.two-up{grid-template-columns:1fr}.amenity-gallery.two-up figure:first-child{grid-column:auto}.scenes-theme .story-nav:after{display:block;content:"关目高殿 · 向下浏览"}.wellith-theme .story-nav:after{display:block;content:"Wellith 大日 · 向下浏览"}}

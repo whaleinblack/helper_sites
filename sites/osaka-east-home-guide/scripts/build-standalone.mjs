@@ -51,6 +51,8 @@ function createPublishedHtml({ title, description, configPath }) {
 await mkdir(outputDir, { recursive: true });
 await writeFile(outputFile, html, "utf8");
 await mkdir(resolve(publishDir, "properties/city-tower-furukawabashi"), { recursive: true });
+await mkdir(resolve(publishDir, "properties/scenes-sekime-takadono"), { recursive: true });
+await mkdir(resolve(publishDir, "properties/wellith-dainichi"), { recursive: true });
 await cp(resolve(projectRoot, "public/assets"), resolve(publishDir, "assets"), { recursive: true });
 await writeFile(resolve(publishDir, "index.html"), createPublishedHtml({
   title: "大阪东线置业研究所｜门真市通勤购房地图",
@@ -60,6 +62,16 @@ await writeFile(resolve(publishDir, "index.html"), createPublishedHtml({
 await writeFile(resolve(publishDir, "properties/city-tower-furukawabashi/index.html"), createPublishedHtml({
   title: "City Tower 古川桥｜大阪东线置业研究所",
   description: "City Tower 古川桥的户型价格、设计、停车、通勤、体育设施与投资价值研究。",
+  configPath: "../../config.js",
+}), "utf8");
+await writeFile(resolve(publishDir, "properties/scenes-sekime-takadono/index.html"), createPublishedHtml({
+  title: "Scenes 关目高殿｜大阪东线置业研究所",
+  description: "Scenes 关目高殿的户型价格、设计、停车、通勤、体育设施与投资价值研究。",
+  configPath: "../../config.js",
+}), "utf8");
+await writeFile(resolve(publishDir, "properties/wellith-dainichi/index.html"), createPublishedHtml({
+  title: "Wellith 大日｜大阪东线置业研究所",
+  description: "Wellith 大日的户型价格、公共空间、停车、通勤、体育设施与投资价值研究。",
   configPath: "../../config.js",
 }), "utf8");
 
