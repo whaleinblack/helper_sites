@@ -4,8 +4,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useRef, useState } from "react";
+import mapCache from "./map-cache.json";
 
 type MapCategory = "all" | "life" | "sports" | "transit";
+type MapFilter = MapCategory | "convenience" | "supermarket";
 type TravelMode = "WALKING" | "DRIVING" | "TRANSIT" | "BICYCLING";
 
 const official = "https://www.sumitomo-rd-mansion.jp/kansai/furukawabashi/";
@@ -33,46 +35,53 @@ const sections = [
   ["value", "投资判断"],
 ] as const;
 
-const facilities = [
-  { name: "古川桥站", label: "古川桥站", icon: "🚉", query: "京阪古川橋駅", category: "transit" as const },
-  { name: "门真市站", label: "门真市站", icon: "🚉", query: "京阪門真市駅", category: "transit" as const },
-  { name: "そよら古川桥站前", label: "Soyora", icon: "🛍", query: "そよら古川橋駅前", category: "life" as const },
-  { name: "Foods Market Satake", label: "Satake", icon: "🛒", query: "Foods Market satake コア古川橋店", category: "life" as const },
-  { name: "LaLaport / Outlet 门真", label: "LaLaport门真", icon: "🛍", query: "ららぽーと門真", category: "life" as const },
-  { name: "Costco 门真", label: "Costco门真", icon: "🛒", query: "コストコホールセール 門真倉庫店", category: "life" as const },
-  { name: "KADOMADO 文化创造图书馆", label: "KADOMADO", icon: "📚", query: "門真市立文化創造図書館 KADOMADO", category: "life" as const },
-  { name: "门真市立综合体育馆", label: "门真综合体育馆", icon: "🏸", query: "門真市立総合体育館", category: "sports" as const },
-  { name: "RACTAB Dome", label: "RACTAB Dome", icon: "🏊", query: "東和薬品RACTABドーム", category: "sports" as const },
-  { name: "守口市民体育馆", label: "守口体育馆", icon: "🏸", query: "守口市民体育館", category: "sports" as const },
-  { name: "鹤见体育中心", label: "鹤见体育中心", icon: "🏸", query: "大阪市立鶴見スポーツセンター", category: "sports" as const },
-  { name: "旭体育中心", label: "旭体育中心", icon: "🏸", query: "大阪市立旭スポーツセンター", category: "sports" as const },
-  { name: "城东体育中心", label: "城东体育中心", icon: "🏸", query: "大阪市立城東スポーツセンター", category: "sports" as const },
-];
+const facilities = mapCache.facilities;
 
-function createPoiLabel(label: string, icon: string, category: MapCategory, isHome = false) {
+type MapIconType = "home" | "station" | "mall" | "convenience" | "supermarket" | "library" | "gym" | "pool";
+
+const mapIconSvg: Record<MapIconType, string> = {
+  home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V5h11v16M8 9h3m-3 4h3m-3 4h3m4-7h5v11M3 21h18"/></svg>',
+  station: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M8 7h8M8 12h.01M16 12h.01M8 17l-2 4m10-4 2 4M8 21h8"/></svg>',
+  mall: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 13H6L5 8Z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg>',
+  convenience: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16v12H4V9Zm-1-5h18l-2 5H5L3 4Z"/><path d="M8 13h8m-8 4h5"/></svg>',
+  supermarket: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10h9.9l2-7H6"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></svg>',
+  library: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A3.5 3.5 0 0 1 7.5 2H11v17H7.5A3.5 3.5 0 0 0 4 22V5.5ZM20 5.5A3.5 3.5 0 0 0 16.5 2H13v17h3.5A3.5 3.5 0 0 1 20 22V5.5Z"/></svg>',
+  gym: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8v8m4-10v12m8-12v12m4-10v8M8 12h8M2 10v4m20-4v4"/></svg>',
+  pool: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v12m0-8h6m0-4v12M2 17c2 0 2 2 4 2s2-2 4-2 2 2 4 2 2-2 4-2 2 2 4 2M2 21c2 0 2 1 4 1s2-1 4-1 2 1 4 1 2-1 4-1 2 1 4 1"/></svg>',
+};
+
+function createPoiLabel(label: string, iconType: MapIconType, category: MapCategory, isHome = false) {
   const root = document.createElement("div");
   root.className = `map-poi-label ${category}${isHome ? " home" : ""}`;
   root.setAttribute("aria-label", label);
   const iconNode = document.createElement("span");
-  iconNode.className = "map-poi-icon";
-  iconNode.textContent = icon;
+  iconNode.className = `map-poi-icon ${iconType}`;
+  iconNode.innerHTML = mapIconSvg[iconType];
   const nameNode = document.createElement("span");
   nameNode.className = "map-poi-name";
   nameNode.textContent = label;
   root.append(iconNode, nameNode);
   return root;
 }
-
 const routeTargets: Array<{ id: string; provider: "google" | "ekispert"; name: string; sub: string; query: string; mode: TravelMode }> = [
-  { id: "furukawabashi", provider: "google", name: "古川桥站", sub: "步行 · Google", query: "京阪古川橋駅", mode: "WALKING" },
+  { id: "furukawabashi", provider: "google", name: "古川桥站", sub: "步行", query: "京阪古川橋駅", mode: "WALKING" },
   { id: "kyobashi", provider: "ekispert", name: "京桥", sub: "京阪本线", query: "京橋駅 大阪", mode: "TRANSIT" },
+  { id: "yodoyabashi", provider: "ekispert", name: "淀屋桥", sub: "京阪终点 / 办公区", query: "淀屋橋駅", mode: "TRANSIT" },
   { id: "osaka", provider: "ekispert", name: "梅田 / 大阪站", sub: "京桥换乘 JR", query: "大阪駅", mode: "TRANSIT" },
+  { id: "honmachi", provider: "ekispert", name: "本町", sub: "大阪核心办公区", query: "本町駅", mode: "TRANSIT" },
+  { id: "namba", provider: "ekispert", name: "难波", sub: "南部商业中心", query: "難波駅", mode: "TRANSIT" },
+  { id: "tennoji", provider: "ekispert", name: "天王寺", sub: "JR / 地铁枢纽", query: "天王寺駅", mode: "TRANSIT" },
   { id: "shin-osaka", provider: "ekispert", name: "新大阪", sub: "新干线门户", query: "新大阪駅", mode: "TRANSIT" },
   { id: "itami", provider: "ekispert", name: "大阪伊丹机场", sub: "铁路 / 单轨", query: "大阪国際空港", mode: "TRANSIT" },
   { id: "kansai", provider: "ekispert", name: "关西机场", sub: "铁路路线", query: "関西国際空港", mode: "TRANSIT" },
-  { id: "lalaport", provider: "google", name: "LaLaport门真", sub: "驾车 · Google", query: "ららぽーと門真", mode: "DRIVING" },
-  { id: "costco", provider: "google", name: "Costco门真", sub: "驾车 · Google", query: "コストコホールセール 門真倉庫店", mode: "DRIVING" },
-  { id: "ractab", provider: "google", name: "RACTAB Dome", sub: "驾车 · Google", query: "東和薬品RACTABドーム", mode: "DRIVING" },
+  { id: "lalaport", provider: "google", name: "LaLaport门真", sub: "生活 · 驾车", query: "ららぽーと門真", mode: "DRIVING" },
+  { id: "costco", provider: "google", name: "Costco门真", sub: "生活 · 驾车", query: "コストコホールセール 門真倉庫店", mode: "DRIVING" },
+  { id: "kadoma-gym", provider: "google", name: "门真综合体育馆", sub: "体育 · 步行", query: "門真市立総合体育館", mode: "WALKING" },
+  { id: "ractab", provider: "google", name: "RACTAB Dome", sub: "体育 / 泳池 · 驾车", query: "東和薬品RACTABドーム", mode: "DRIVING" },
+  { id: "moriguchi-gym", provider: "google", name: "守口体育馆", sub: "体育 · 驾车", query: "守口市民体育館", mode: "DRIVING" },
+  { id: "tsurumi-gym", provider: "google", name: "鹤见体育中心", sub: "体育 · 驾车", query: "大阪市立鶴見スポーツセンター", mode: "DRIVING" },
+  { id: "joto-gym", provider: "google", name: "城东体育中心", sub: "体育 · 驾车", query: "大阪市立城東スポーツセンター", mode: "DRIVING" },
+  { id: "neyagawa-gym", provider: "google", name: "寝屋川体育馆", sub: "体育 · 驾车", query: "寝屋川市立市民体育館", mode: "DRIVING" },
 ];
 
 declare global {
@@ -107,7 +116,7 @@ async function loadGoogleMaps() {
   if (!config.googleMapsApiKey) throw new Error("地图 API 尚未配置");
   await new Promise<void>((resolve, reject) => {
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(config.googleMapsApiKey ?? "")}&v=beta&libraries=maps,marker,places,routes&language=zh-CN&region=JP`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(config.googleMapsApiKey ?? "")}&v=beta&libraries=maps,marker&language=zh-CN&region=JP`;
     script.async = true;
     script.onload = () => resolve();
     script.onerror = () => reject(new Error("Google Maps 加载失败"));
@@ -124,14 +133,12 @@ export default function CityTowerFurukawabashi() {
   const scrollRoot = useRef<HTMLElement | null>(null);
   const mapElement = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<any>(null);
-  const directionsService = useRef<any>(null);
-  const directionsRenderer = useRef<any>(null);
-  const ekispertPolyline = useRef<any>(null);
-  const markers = useRef<Array<{ setVisible: (visible: boolean) => void; category: MapCategory }>>([]);
+  const routePolyline = useRef<any>(null);
+  const markers = useRef<Array<{ setVisible: (visible: boolean) => void; category: MapCategory; iconType: MapIconType }>>([]);
   const [activeSection, setActiveSection] = useState("overview");
-  const [mapCategory, setMapCategory] = useState<MapCategory>("all");
+  const [mapCategory, setMapCategory] = useState<MapFilter>("all");
   const [mapStatus, setMapStatus] = useState("正在载入同级 Google 地图…");
-  const [routeStatus, setRouteStatus] = useState("选择一个目的地，地图会计算当前路线时间。");
+  const [routeStatus, setRouteStatus] = useState("选择目的地即可查看开发阶段预先查询的路线快照；点击不会调用路线 API。");
 
   useEffect(() => {
     const root = scrollRoot.current;
@@ -167,20 +174,18 @@ export default function CityTowerFurukawabashi() {
         if (config.googleMapId) mapOptions.mapId = config.googleMapId;
         const map = new google.maps.Map(mapElement.current, mapOptions);
         mapInstance.current = map;
-        directionsService.current = new google.maps.DirectionsService();
-        directionsRenderer.current = new google.maps.DirectionsRenderer({ map, suppressMarkers: false, polylineOptions: { strokeColor: "#e6533f", strokeWeight: 6 } });
         const info = new google.maps.InfoWindow();
-        const addLabeledMarker = ({ position, title, label, icon, category, isHome = false }: { position: any; title: string; label: string; icon: string; category: MapCategory; isHome?: boolean }) => {
+        const addLabeledMarker = ({ position, title, label, iconType, category, isHome = false }: { position: any; title: string; label: string; iconType: MapIconType; category: MapCategory; isHome?: boolean }) => {
           const color = isHome ? "#e6533f" : category === "sports" ? "#2d7f71" : category === "life" ? "#d99a35" : "#3f72af";
           if (google.maps.marker?.AdvancedMarkerElement && config.googleMapId) {
             const marker = new google.maps.marker.AdvancedMarkerElement({
               map,
               position,
               title,
-              content: createPoiLabel(label, icon, category, isHome),
+              content: createPoiLabel(label, iconType, category, isHome),
               gmpClickable: true,
-              zIndex: isHome ? 1000 : category === "transit" ? 600 : 400,
-              collisionBehavior: google.maps.CollisionBehavior?.REQUIRED,
+              zIndex: isHome ? 1000 : category === "transit" ? 800 : category === "sports" ? 600 : iconType === "supermarket" ? 420 : iconType === "convenience" ? 300 : 500,
+              collisionBehavior: google.maps.CollisionBehavior?.OPTIONAL_AND_HIDES_LOWER_PRIORITY,
             });
             return { marker, setVisible: (visible: boolean) => { marker.map = visible ? map : null; } };
           }
@@ -188,82 +193,64 @@ export default function CityTowerFurukawabashi() {
             map,
             position,
             title,
-            label: { text: `${icon} ${label}`, color: "#10241f", fontSize: "13px", fontWeight: "700" },
+            label: { text: label, color: "#10241f", fontSize: "13px", fontWeight: "700" },
             icon: { path: google.maps.SymbolPath.CIRCLE, fillColor: color, fillOpacity: 1, strokeColor: "#fff", strokeWeight: 3, scale: isHome ? 11 : 8, labelOrigin: new google.maps.Point(0, -18) },
           });
           return { marker, setVisible: (visible: boolean) => marker.setVisible(visible) };
         };
 
-        const homeEntry = addLabeledMarker({ position: center, title: "City Tower 古川桥", label: "City Tower 古川桥", icon: "🏙", category: "all", isHome: true });
+        const homeEntry = addLabeledMarker({ position: center, title: "City Tower 古川桥", label: "City Tower 古川桥", iconType: "home", category: "all", isHome: true });
         homeEntry.marker.addListener("click", () => { info.setContent("<strong>City Tower 古川桥</strong><br>研究坐标：幸福町14-15周边"); info.open({ map, anchor: homeEntry.marker }); });
-        markers.current.push({ setVisible: homeEntry.setVisible, category: "all" });
+        markers.current.push({ setVisible: homeEntry.setVisible, category: "all", iconType: "home" });
 
-        const geocoder = new google.maps.Geocoder();
-        await Promise.all(facilities.map(async (facility) => {
-          try {
-            const response = await geocoder.geocode({ address: facility.query, region: "jp" });
-            const location = response.results?.[0]?.geometry?.location;
-            if (!location || cancelled) return;
-            const entry = addLabeledMarker({ position: location, title: facility.name, label: facility.label, icon: facility.icon, category: facility.category });
-            entry.marker.addListener("click", () => { info.setContent(`<strong>${facility.name}</strong><br>${facility.category === "sports" ? "运动设施" : facility.category === "life" ? "生活设施" : "交通节点"}`); info.open({ map, anchor: entry.marker }); });
-            markers.current.push({ setVisible: entry.setVisible, category: facility.category });
-          } catch { /* A missing POI must not block the map. */ }
-        }));
-        if (!cancelled) setMapStatus("地图已就绪 · 可缩放、切换底图并计算路线");
+        facilities.forEach((cachedFacility) => {
+          const facility: any = cachedFacility;
+          const category = facility.category as MapCategory;
+          const entry = addLabeledMarker({ position: { lat: facility.lat, lng: facility.lng }, title: facility.name, label: facility.label, iconType: facility.iconType as MapIconType, category });
+          entry.marker.addListener("click", () => { const detail = facility.vicinity ? `<br><span>${facility.vicinity}</span>` : ""; const kind = facility.iconType === "convenience" ? "便利店" : facility.iconType === "supermarket" ? "超市 / 食品采购" : category === "sports" ? "运动设施" : category === "life" ? "生活设施" : "交通节点"; info.setContent(`<strong>${facility.name}</strong><br>${kind}${detail}`); info.open({ map, anchor: entry.marker }); });
+          markers.current.push({ setVisible: entry.setVisible, category, iconType: facility.iconType as MapIconType });
+        });
+        if (!cancelled) setMapStatus(`地图已就绪 · ${mapCache.facilitySummary.total} 个设施：${mapCache.facilitySummary.convenienceStores} 家便利店、${mapCache.facilitySummary.supermarkets} 家超市、${mapCache.facilitySummary.sports} 个体育设施`);
       })
       .catch((error) => !cancelled && setMapStatus(error instanceof Error ? error.message : "地图加载失败"));
     return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
-    markers.current.forEach(({ setVisible, category }) => setVisible(category === "all" || mapCategory === "all" || category === mapCategory));
+    markers.current.forEach(({ setVisible, category, iconType }) => setVisible(category === "all" || mapCategory === "all" || (mapCategory === "convenience" || mapCategory === "supermarket" ? iconType === mapCategory : category === mapCategory)));
   }, [mapCategory]);
 
-  async function showRoute(target: (typeof routeTargets)[number]) {
+  function showRoute(target: (typeof routeTargets)[number]) {
     const map = mapInstance.current;
     const google = window.google;
     if (!map || !google?.maps) {
       setRouteStatus("地图仍在载入，请稍后再试。");
       return;
     }
-    setRouteStatus(`正在通过${target.provider === "ekispert" ? "服务器 Ekispert" : "Google Maps"}计算前往${target.name}的${formatMode(target.mode)}路线…`);
-    try {
-      if (target.provider === "ekispert") {
-        const response = await fetch(`${siteBasePath()}api/transit-route?destination=${encodeURIComponent(target.id)}`, { headers: { Accept: "application/json" } });
-        const route = await response.json();
-        if (!response.ok) throw new Error(route.hint ?? "Ekispert 路线查询失败");
-        directionsRenderer.current?.setMap(null);
-        ekispertPolyline.current?.setMap(null);
-        const path = Array.isArray(route.path) ? route.path : [];
-        if (path.length > 1) {
-          ekispertPolyline.current = new google.maps.Polyline({ map, path, geodesic: true, strokeColor: "#2d7f71", strokeOpacity: 0.92, strokeWeight: 7 });
-          const bounds = new google.maps.LatLngBounds();
-          path.forEach((point: { lat: number; lng: number }) => bounds.extend(point));
-          map.fitBounds(bounds, 72);
-        }
-        const lineSummary = Array.isArray(route.steps) ? route.steps.map((step: { line?: string }) => step.line).filter(Boolean).join(" → ") : "";
-        setRouteStatus(`${target.name} · Ekispert 约 ${route.durationMinutes ?? "—"} 分钟 · ${route.transferCount ? `换乘 ${route.transferCount} 次` : "直达"}${route.fareYen ? ` · 约 ¥${route.fareYen}` : ""}${lineSummary ? ` · ${lineSummary}` : ""}。站点级结果，班次以出发时刻为准。`);
-        return;
-      }
-
-      const service = directionsService.current;
-      const renderer = directionsRenderer.current;
-      if (!service || !renderer) throw new Error("Google 路线服务尚未就绪");
-      ekispertPolyline.current?.setMap(null);
-      renderer.setMap(map);
-      const result = await service.route({
-        origin: { lat: 34.741652, lng: 135.5905763 },
-        destination: target.query,
-        travelMode: google.maps.TravelMode[target.mode],
-        region: "JP",
-      });
-      renderer.setDirections(result);
-      const leg = result.routes?.[0]?.legs?.[0];
-      setRouteStatus(`${target.name} · Google Maps ${formatMode(target.mode)}约 ${leg?.duration?.text ?? "—"} · ${leg?.distance?.text ?? "距离由路线决定"}。实际时间随路况变化。`);
-      map.panTo(leg?.start_location);
-    } catch (error) {
-      setRouteStatus(error instanceof Error ? error.message : `暂时无法计算${target.name}路线，可点击下方外部地图继续。`);
+    const route: any = (mapCache.routes as Record<string, any>)[target.id];
+    if (!route || !Array.isArray(route.path) || route.path.length < 2) {
+      setRouteStatus(`${target.name}的缓存路线暂不可用。`);
+      return;
     }
+    routePolyline.current?.setMap(null);
+    routePolyline.current = new google.maps.Polyline({
+      map,
+      path: route.path,
+      geodesic: true,
+      strokeColor: target.provider === "ekispert" ? "#2d7f71" : "#e6533f",
+      strokeOpacity: 0.92,
+      strokeWeight: 7,
+    });
+    const bounds = new google.maps.LatLngBounds();
+    route.path.forEach((point: { lat: number; lng: number }) => bounds.extend(point));
+    map.fitBounds(bounds, 72);
+    const cacheDate = new Date(mapCache.generatedAt).toLocaleDateString("zh-CN", { timeZone: "Asia/Tokyo" });
+    if (target.provider === "ekispert") {
+      const lineSummary = Array.isArray(route.steps) ? route.steps.map((step: { line?: string }) => step.line).filter(Boolean).join(" → ") : "";
+      setRouteStatus(`${target.name} · Ekispert 缓存约 ${route.durationMinutes ?? "—"} 分钟 · ${route.transferCount ? `换乘 ${route.transferCount} 次` : "直达"}${route.fareYen ? ` · 约 ¥${route.fareYen}` : ""}${lineSummary ? ` · ${lineSummary}` : ""}。快照日期：${cacheDate}，点击未调用 API。`);
+      return;
+    }
+    setRouteStatus(`${target.name} · Google Maps 缓存${formatMode(target.mode)}约 ${route.durationText ?? `${route.durationMinutes ?? "—"} 分钟`} · ${route.distanceText ?? "距离见路线"}。快照日期：${cacheDate}，点击未调用 API。`);
   }
 
   return (
@@ -328,11 +315,11 @@ export default function CityTowerFurukawabashi() {
 
       <section className="story-section map-story" id="map">
         <div ref={mapElement} className="property-map" aria-label="City Tower古川桥周边互动地图" />
-        <div className="map-panel"><p className="story-kicker">LIVE MAP · GOOGLE MAPS</p><h2>把生活圈放到同一张地图。</h2><p>{mapStatus}</p><div className="map-filters">{([['all','全部'],['life','生活'],['sports','运动'],['transit','交通']] as const).map(([value,label])=><button key={value} onClick={()=>setMapCategory(value)} className={mapCategory===value?'active':''}>{label}</button>)}</div><div className="route-groups"><section><small>公交 / 铁路 · 服务器 Ekispert</small><div className="route-picker">{routeTargets.filter(target=>target.provider==="ekispert").map(target=><button key={target.id} onClick={()=>showRoute(target)}><b>{target.name}</b><span>{target.sub}</span></button>)}</div></section><section><small>步行 / 驾车 · Google Maps</small><div className="route-picker">{routeTargets.filter(target=>target.provider==="google").map(target=><button key={target.id} onClick={()=>showRoute(target)}><b>{target.name}</b><span>{target.sub}</span></button>)}</div></section></div><div className="route-status">{routeStatus}</div><a href="https://www.google.com/maps/dir/?api=1&origin=34.741652,135.5905763" target="_blank" rel="noreferrer">在 Google Maps 继续规划 ↗</a></div>
+        <div className="map-panel"><p className="story-kicker">CACHED MAP · GOOGLE MAPS</p><h2>把生活圈放到同一张地图。</h2><p>{mapStatus}</p><div className="map-filters">{([['all','全部'],['convenience','便利店'],['supermarket','超市'],['sports','运动'],['transit','交通'],['life','其他生活']] as const).map(([value,label])=><button key={value} onClick={()=>setMapCategory(value)} className={mapCategory===value?'active':''}>{label}</button>)}</div><div className="route-groups"><section><small>主要通勤 · Ekispert 开发缓存</small><div className="route-picker">{routeTargets.filter(target=>target.provider==="ekispert").map(target=><button key={target.id} onClick={()=>showRoute(target)}><b>{target.name}</b><span>{target.sub}</span></button>)}</div></section><section><small>步行 / 驾车 / 体育馆 · Google 开发缓存</small><div className="route-picker">{routeTargets.filter(target=>target.provider==="google").map(target=><button key={target.id} onClick={()=>showRoute(target)}><b>{target.name}</b><span>{target.sub}</span></button>)}</div></section></div><div className="route-status">{routeStatus}</div><a href="https://www.google.com/maps/dir/?api=1&origin=34.741652,135.5905763" target="_blank" rel="noreferrer">在 Google Maps 继续规划 ↗</a></div>
       </section>
 
       <section className="story-section commute-story" id="commute">
-        <div className="story-copy wide-copy"><p className="story-kicker">COMMUTE LOGIC</p><h2>通勤的关键不是“离大阪多远”，而是在哪一次换乘。</h2><div className="commute-flow"><article><small>HOME → 古川桥</small><strong>步行 4 分钟</strong><p>官方口径；道路与广场完成后路线仍可能调整。</p></article><article><small>古川桥 → 京桥</small><strong>京阪本线</strong><p>主要城市换乘点；前往大阪站、难波方向通常从这里分流。</p></article><article><small>门真市 → 伊丹</small><strong>大阪单轨</strong><p>一站到门真市后换乘单轨；当前常见全程约45–65分钟，页面地图可按出发时刻重算。</p></article><article><small>寝屋川市 → KIX</small><strong>机场巴士备选</strong><p>官方介绍从寝屋川市东口有直达关西机场巴士，需按航班时刻核验班次。</p></article></div><p className="callout">新大阪不是直达：通常需要在京桥转 JR，再连接大阪站或其他换乘方案。高频坐新干线的人，应把“门到站”的实际换乘疲劳纳入，而不只看铁路运行分钟数。</p></div>
+        <div className="story-copy wide-copy"><p className="story-kicker">COMMUTE LOGIC</p><h2>通勤的关键不是“离大阪多远”，而是在哪一次换乘。</h2><div className="commute-flow"><article><small>HOME → 古川桥</small><strong>步行 4 分钟</strong><p>官方口径；道路与广场完成后路线仍可能调整。</p></article><article><small>古川桥 → 京桥</small><strong>京阪本线</strong><p>主要城市换乘点；前往大阪站、难波方向通常从这里分流。</p></article><article><small>门真市 → 伊丹</small><strong>大阪单轨</strong><p>一站到门真市后换乘单轨；当前常见全程约45–65分钟，页面显示开发阶段路线快照，出发前请复核班次。</p></article><article><small>寝屋川市 → KIX</small><strong>机场巴士备选</strong><p>官方介绍从寝屋川市东口有直达关西机场巴士，需按航班时刻核验班次。</p></article></div><p className="callout">新大阪不是直达：通常需要在京桥转 JR，再连接大阪站或其他换乘方案。高频坐新干线的人，应把“门到站”的实际换乘疲劳纳入，而不只看铁路运行分钟数。</p></div>
       </section>
 
       <section className="story-section life-story" id="life">
@@ -344,7 +331,7 @@ export default function CityTowerFurukawabashi() {
       </section>
 
       <section className="story-section value-story" id="value">
-        <div className="story-copy wide-copy"><p className="story-kicker">VALUE & FUTURE</p><h2>它的未来性来自“稀缺地标”，不是来自低买入价。</h2><div className="value-matrix"><article className="positive"><small>支撑因素</small><ul><li>门真市首个41层、648户的大规模塔楼，识别度强</li><li>古川桥站步行4分钟，站距对郊区转售尤为重要</li><li>公共文化设施、广场和商业同步落地，生活圈升级</li><li>京阪沿线持续推进站前再开发与沿线价值提升</li></ul></article><article className="negative"><small>需要折价思考</small><ul><li>4,800–8,700万已包含新筑、塔楼和再开发溢价</li><li>机械停车与大规模共用设施会形成长期维护成本</li><li>南东侧公共设施、南侧17层计划建筑影响部分视野</li><li>门真市二手买家总价承受力可能限制高价户型流动性</li></ul></article></div><div className="final-verdict"><span>研究所判断</span><h3>自住价值高于纯投资收益；优先中总价、家庭型、站近逻辑清晰的户型。</h3><p>如果目标是5–10年自住并频繁使用门真/京阪沿线、体育馆和周边商业，K-3等约68㎡中间户具备较好的“用得上”价值。若主要追求租金回报，应单独核算管理修缮、空置、出租限制与预期租金，不应只看地标性。</p></div><div className="source-links"><a href={official} target="_blank" rel="noreferrer">住友不动产官方资料 ↗</a><a href="https://suumo.jp/ms/shinchiku/osaka/sc_kadoma/nc_67729555/property/" target="_blank" rel="noreferrer">SUUMO 物件概要与最新销售期 ↗</a><a href="https://www.city.kadoma.osaka.jp/machizukuri_rodo/machizukuri/kanminrenkei/hurukawabasisyuhen/kadomashi_kyuudaiicchuuatochi/22977.html" target="_blank" rel="noreferrer">门真市站前开发资料 ↗</a></div><p className="fine-print">本页为中文置业研究，不是开发商销售材料，也不构成投资、贷款、税务或法律建议。价格信息更新至2026年8月19日前后的公开销售资料；地图路线、商户与开放时间会变化，请在看房和签约当天复核。</p></div>
+        <div className="story-copy wide-copy"><p className="story-kicker">VALUE & FUTURE</p><h2>它的未来性来自“稀缺地标”，不是来自低买入价。</h2><div className="value-matrix"><article className="positive"><small>支撑因素</small><ul><li>门真市首个41层、648户的大规模塔楼，识别度强</li><li>古川桥站步行4分钟，站距对郊区转售尤为重要</li><li>公共文化设施、广场和商业同步落地，生活圈升级</li><li>京阪沿线持续推进站前再开发与沿线价值提升</li></ul></article><article className="negative"><small>需要折价思考</small><ul><li>4,800–8,700万已包含新筑、塔楼和再开发溢价</li><li>机械停车与大规模共用设施会形成长期维护成本</li><li>南东侧公共设施、南侧17层计划建筑影响部分视野</li><li>门真市二手买家总价承受力可能限制高价户型流动性</li></ul></article></div><div className="final-verdict"><span>研究所判断</span><h3>自住价值高于纯投资收益；优先中总价、家庭型、站近逻辑清晰的户型。</h3><p>如果目标是5–10年自住并频繁使用门真/京阪沿线、体育馆和周边商业，K-3等约68㎡中间户具备较好的“用得上”价值。若主要追求租金回报，应单独核算管理修缮、空置、出租限制与预期租金，不应只看地标性。</p></div><div className="source-links"><a href={official} target="_blank" rel="noreferrer">住友不动产官方资料 ↗</a><a href="https://suumo.jp/ms/shinchiku/osaka/sc_kadoma/nc_67729555/property/" target="_blank" rel="noreferrer">SUUMO 物件概要与最新销售期 ↗</a><a href="https://www.city.kadoma.osaka.jp/machizukuri_rodo/machizukuri/kanminrenkei/hurukawabasisyuhen/kadomashi_kyuudaiicchuuatochi/22977.html" target="_blank" rel="noreferrer">门真市站前开发资料 ↗</a></div><p className="fine-print">本页为中文置业研究，不是开发商销售材料，也不构成投资、贷款、税务或法律建议。价格信息更新至2026年8月19日前后的公开销售资料；地图设施与路线为开发阶段缓存快照，商户、班次与开放时间会变化，请在看房和签约当天复核。</p></div>
       </section>
     </main>
   );
