@@ -32,6 +32,19 @@ const commonTransitTargets = [
   { id: "kansai", provider: "ekispert", name: "关西机场", lat: 34.435897, lng: 135.2438775 },
 ];
 
+function catalogRoutes(station, sports, skipTransitId) {
+  return [
+    { id: station.id, provider: "google", name: station.name, query: station.query, mode: "walking" },
+    ...commonTransitTargets.filter((target) => target.id !== skipTransitId),
+    ...sports.map((sport) => ({ id: sport.id, provider: "google", name: sport.name, query: sport.query, mode: "driving" })),
+  ];
+}
+
+const moriguchiSports = sportsFacilities.filter((item) => ["moriguchi-gym", "kadoma-gym", "ractab"].includes(item.id));
+const sekimeSports = sportsFacilities.filter((item) => ["asahi-gym", "joto-gym", "tsurumi-gym"].includes(item.id));
+const dainichiSports = sportsFacilities.filter((item) => ["kadoma-gym", "ractab", "moriguchi-gym"].includes(item.id));
+const miyakojimaSports = sportsFacilities.filter((item) => ["miyakojima-gym", "kita-gym", "joto-gym"].includes(item.id));
+
 const properties = [
   {
     slug: "scenes-sekime-takadono",
@@ -72,6 +85,106 @@ const properties = [
       { id: "ractab", provider: "google", name: "RACTAB Dome", query: "東和薬品RACTABドーム", mode: "driving" },
       { id: "moriguchi-gym", provider: "google", name: "守口体育馆", query: "守口市民体育館", mode: "driving" },
     ],
+  },
+  {
+    slug: "cielia-moriguchi", name: "Cielia 守口", originQuery: "シエリア守口 守口市日向町",
+    facilities: [
+      { id:"moriguchi-station",name:"守口站",label:"守口站",iconType:"station",query:"大阪メトロ守口駅",category:"transit" },
+      { id:"moriguchishi-station",name:"守口市站",label:"守口市站",iconType:"station",query:"京阪守口市駅",category:"transit" },
+      { id:"aeon-town-moriguchi",name:"AEON Town守口",label:"AEON Town守口",iconType:"mall",query:"イオンタウン守口",category:"life" },
+      { id:"keihan-moriguchi",name:"京阪百货守口店",label:"京阪百货守口",iconType:"mall",query:"京阪百貨店 守口店",category:"life" },
+    ],
+    routes: catalogRoutes({id:"moriguchi",name:"守口站",query:"大阪メトロ守口駅"},moriguchiSports),
+  },
+  {
+    slug: "city-house-shimmori", name: "City House 新森", originQuery: "シティハウス新森",
+    facilities: [
+      { id:"shimmori-furuichi-station",name:"新森古市站",label:"新森古市站",iconType:"station",query:"新森古市駅",category:"transit" },
+      { id:"morishoji-station",name:"森小路站",label:"森小路站",iconType:"station",query:"森小路駅",category:"transit" },
+      { id:"tsurumi-park",name:"花博纪念公园鹤见绿地",label:"鹤见绿地",iconType:"park",query:"花博記念公園 鶴見緑地",category:"life" },
+      { id:"aeon-tsurumi",name:"AEON Mall鹤见绿地",label:"AEON鹤见",iconType:"mall",query:"イオンモール鶴見緑地",category:"life" },
+    ],
+    routes: catalogRoutes({id:"shimmori-furuichi",name:"新森古市站",query:"新森古市駅"},sekimeSports),
+  },
+  {
+    slug: "liber-city-moriguchi", name: "Liber City 守口", originQuery: "リベールシティ守口",
+    facilities: [
+      { id:"nishisanso-station",name:"西三庄站",label:"西三庄站",iconType:"station",query:"西三荘駅",category:"transit" },
+      { id:"kadomashi-station",name:"门真市站",label:"门真市站",iconType:"station",query:"門真市駅",category:"transit" },
+      { id:"lalaport",name:"LaLaport门真",label:"LaLaport门真",iconType:"mall",query:"ららぽーと門真",category:"life" },
+      { id:"costco",name:"Costco门真",label:"Costco门真",iconType:"supermarket",query:"コストコホールセール 門真倉庫店",category:"life" },
+    ],
+    routes: catalogRoutes({id:"nishisanso",name:"西三庄站",query:"西三荘駅"},moriguchiSports),
+  },
+  {
+    slug: "park-homes-lala-kadoma", name: "Park Homes LaLa 门真", originQuery: "パークホームズLaLa門真",
+    facilities: [
+      { id:"kadomashi-station",name:"门真市站",label:"门真市站",iconType:"station",query:"門真市駅",category:"transit" },
+      { id:"furukawabashi-station",name:"古川桥站",label:"古川桥站",iconType:"station",query:"古川橋駅",category:"transit" },
+      { id:"lalaport",name:"LaLaport门真",label:"LaLaport门真",iconType:"mall",query:"ららぽーと門真",category:"life" },
+      { id:"costco",name:"Costco门真",label:"Costco门真",iconType:"supermarket",query:"コストコホールセール 門真倉庫店",category:"life" },
+    ],
+    routes: catalogRoutes({id:"kadomashi-walk",name:"门真市站",query:"門真市駅"},moriguchiSports,"kadomashi"),
+  },
+  {
+    slug: "proud-sekime", name: "Proud 关目", originQuery: "プラウド関目 大阪市城東区",
+    facilities: [
+      { id:"sekime-station",name:"关目站",label:"关目站",iconType:"station",query:"京阪関目駅",category:"transit" },
+      { id:"sekime-seiiku-station",name:"关目成育站",label:"关目成育站",iconType:"station",query:"関目成育駅",category:"transit" },
+      { id:"sekime-takadono-station",name:"关目高殿站",label:"关目高殿站",iconType:"station",query:"関目高殿駅",category:"transit" },
+      { id:"sekime-shotengai",name:"关目商店街",label:"关目商店街",iconType:"mall",query:"関目商店街",category:"life" },
+    ],
+    routes: catalogRoutes({id:"sekime",name:"关目站",query:"京阪関目駅"},sekimeSports),
+  },
+  {
+    slug: "geo-sekime-takadono", name: "Geo 关目高殿", originQuery: "ジオ関目高殿",
+    facilities: [
+      { id:"sekime-takadono-station",name:"关目高殿站",label:"关目高殿站",iconType:"station",query:"関目高殿駅",category:"transit" },
+      { id:"sekime-station",name:"关目站",label:"关目站",iconType:"station",query:"京阪関目駅",category:"transit" },
+      { id:"jr-noe-station",name:"JR野江站",label:"JR野江站",iconType:"station",query:"JR野江駅",category:"transit" },
+      { id:"sekime-shotengai",name:"关目商店街",label:"关目商店街",iconType:"mall",query:"関目商店街",category:"life" },
+    ],
+    routes: catalogRoutes({id:"sekime-takadono-walk",name:"关目高殿站",query:"関目高殿駅"},sekimeSports),
+  },
+  {
+    slug: "sun-marks-dainichi", name: "Sun Marks 大日", originQuery: "サンマークスだいにち",
+    facilities: [
+      { id:"dainichi-station",name:"大日站",label:"大日站",iconType:"station",query:"大日駅",category:"transit" },
+      { id:"kadomashi-station",name:"门真市站",label:"门真市站",iconType:"station",query:"門真市駅",category:"transit" },
+      { id:"aeon-dainichi",name:"AEON Mall大日",label:"AEON大日",iconType:"mall",query:"イオンモール大日",category:"life" },
+      { id:"lalaport",name:"LaLaport门真",label:"LaLaport门真",iconType:"mall",query:"ららぽーと門真",category:"life" },
+    ],
+    routes: catalogRoutes({id:"dainichi-walk",name:"大日站",query:"大日駅"},dainichiSports),
+  },
+  {
+    slug: "moriguchi-midsite-tower", name: "守口 Midsite 文禄 Hills The Tower", originQuery: "守口ミッドサイト文禄ヒルズザ・タワー",
+    facilities: [
+      { id:"moriguchishi-station",name:"守口市站",label:"守口市站",iconType:"station",query:"京阪守口市駅",category:"transit" },
+      { id:"moriguchi-station",name:"守口站",label:"守口站",iconType:"station",query:"大阪メトロ守口駅",category:"transit" },
+      { id:"keihan-moriguchi",name:"京阪百货守口店",label:"京阪百货守口",iconType:"mall",query:"京阪百貨店 守口店",category:"life" },
+      { id:"aeon-town-moriguchi",name:"AEON Town守口",label:"AEON Town守口",iconType:"mall",query:"イオンタウン守口",category:"life" },
+    ],
+    routes: catalogRoutes({id:"moriguchishi",name:"守口市站",query:"京阪守口市駅"},moriguchiSports),
+  },
+  {
+    slug: "river-garden-miyakojima", name: "River Garden 都岛", originQuery: "リバーガーデン都島",
+    facilities: [
+      { id:"miyakojima-station",name:"都岛站",label:"都岛站",iconType:"station",query:"都島駅",category:"transit" },
+      { id:"shirokitakoendori-station",name:"城北公园通站",label:"城北公园通站",iconType:"station",query:"城北公園通駅",category:"transit" },
+      { id:"bellfa",name:"BELLFA都岛购物中心",label:"BELLFA都岛",iconType:"mall",query:"ベルファ都島ショッピングセンター",category:"life" },
+      { id:"kema-sakuranomiya",name:"毛马樱之宫公园",label:"毛马樱之宫公园",iconType:"park",query:"毛馬桜之宮公園",category:"life" },
+    ],
+    routes: catalogRoutes({id:"miyakojima",name:"都岛站",query:"都島駅"},miyakojimaSports),
+  },
+  {
+    slug: "cielia-kyobashi", name: "Cielia 京桥 The Residence", originQuery: "シエリア京橋 ザ・レジデンス",
+    facilities: [
+      { id:"kyobashi-station",name:"京桥站",label:"京桥站",iconType:"station",query:"京橋駅 大阪",category:"transit" },
+      { id:"osakajokitazume-station",name:"大阪城北诘站",label:"大阪城北诘站",iconType:"station",query:"大阪城北詰駅",category:"transit" },
+      { id:"keihan-mall",name:"京阪Mall",label:"京阪Mall",iconType:"mall",query:"京阪モール",category:"life" },
+      { id:"osaka-castle-park",name:"大阪城公园",label:"大阪城公园",iconType:"park",query:"大阪城公園",category:"life" },
+    ],
+    routes: catalogRoutes({id:"kyobashi-walk",name:"京桥站",query:"京橋駅 大阪"},miyakojimaSports,"kyobashi"),
   },
 ];
 

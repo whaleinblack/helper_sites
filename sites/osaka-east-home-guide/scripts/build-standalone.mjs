@@ -48,11 +48,25 @@ function createPublishedHtml({ title, description, configPath }) {
     .replace("<script>", `<script src="${configPath}"></script>\n    <script>`);
 }
 
+const catalogPages = [
+  ["cielia-moriguchi", "Cielia 守口", "定期借地权、户型、停车、通勤与投资价值研究。"],
+  ["city-house-shimmori", "City House 新森", "站距、公园、停车、通勤与投资价值研究。"],
+  ["liber-city-moriguchi", "Liber City 守口", "尾盘价格、停车、通勤与投资价值研究。"],
+  ["park-homes-lala-kadoma", "Park Homes LaLa 门真", "次新挂牌、商业、停车与投资价值研究。"],
+  ["proud-sekime", "Proud 关目", "品牌中古、面积、管理与投资价值研究。"],
+  ["geo-sekime-takadono", "Geo 关目高殿", "站前中古、挂牌、管理与投资价值研究。"],
+  ["sun-marks-dainichi", "Sun Marks 大日", "大规模塔楼群、修缮与投资价值研究。"],
+  ["moriguchi-midsite-tower", "守口 Midsite Tower", "站前塔楼、挂牌、修缮与投资价值研究。"],
+  ["river-garden-miyakojima", "River Garden 都岛", "都岛新筑、户型、停车与投资价值研究。"],
+  ["cielia-kyobashi", "Cielia 京桥 The Residence", "京桥站前新筑、定期借地权与投资价值研究。"],
+];
+
 await mkdir(outputDir, { recursive: true });
 await writeFile(outputFile, html, "utf8");
 await mkdir(resolve(publishDir, "properties/city-tower-furukawabashi"), { recursive: true });
 await mkdir(resolve(publishDir, "properties/scenes-sekime-takadono"), { recursive: true });
 await mkdir(resolve(publishDir, "properties/wellith-dainichi"), { recursive: true });
+for (const [slug] of catalogPages) await mkdir(resolve(publishDir, "properties", slug), { recursive: true });
 await cp(resolve(projectRoot, "public/assets"), resolve(publishDir, "assets"), { recursive: true });
 await writeFile(resolve(publishDir, "index.html"), createPublishedHtml({
   title: "大阪东线置业研究所｜门真市通勤购房地图",
@@ -74,6 +88,9 @@ await writeFile(resolve(publishDir, "properties/wellith-dainichi/index.html"), c
   description: "Wellith 大日的户型价格、公共空间、停车、通勤、体育设施与投资价值研究。",
   configPath: "../../config.js",
 }), "utf8");
+for (const [slug, title, description] of catalogPages) {
+  await writeFile(resolve(publishDir, "properties", slug, "index.html"), createPublishedHtml({ title: `${title}｜大阪东线置业研究所`, description, configPath: "../../config.js" }), "utf8");
+}
 
 const forbiddenReferences = [
   /<script[^>]+src=/i,

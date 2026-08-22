@@ -1,0 +1,49 @@
+{
+  "cielia-moriguchi": {
+    "path": "../../assets/cielia-moriguchi/hero.jpg",
+    "source": "https://www.cielia.com/m/moriguchi53/",
+    "imageSource": "https://www.cielia.com/m/moriguchi53/common/images/ogp.jpg"
+  },
+  "city-house-shimmori": {
+    "path": "../../assets/city-house-shimmori/hero.avif",
+    "source": "https://www.sumitomo-rd-mansion.jp/kansai/shimmori/",
+    "imageSource": "https://www.sumitomo-rd-mansion.jp/kansai/shimmori/images/ogp/ogp.jpg"
+  },
+  "liber-city-moriguchi": {
+    "path": "../../assets/liber-city-moriguchi/hero.jpg",
+    "source": "https://www.showa-jutaku.co.jp/lc-moriguchi/",
+    "imageSource": "https://www.showa-jutaku.co.jp/lc-moriguchi/assets/img/ogp/pre_ogp.jpg"
+  },
+  "park-homes-lala-kadoma": {
+    "path": null,
+    "source": "https://www.homes.co.jp/archive/b-45742714/"
+  },
+  "proud-sekime": {
+    "path": "../../assets/proud-sekime/hero.webp",
+    "source": "https://www.nomu.com/mansion/library/id/P0027582/",
+    "imageSource": "https://image.nomu.com/f=webp:auto,q=95/catalog/P00/7582/P0027582_0101_25.jpg?202607091109"
+  },
+  "geo-sekime-takadono": {
+    "path": null,
+    "source": "https://suumo.jp/library/tf_27/sc_27118/to_1000873952/",
+    "imageSource": "https://suumo.jp/library/img/library_h1_title.png"
+  },
+  "sun-marks-dainichi": {
+    "path": null,
+    "source": "https://www.stepon.co.jp/premier/sun-marks-dainichi/"
+  },
+  "moriguchi-midsite-tower": {
+    "path": null,
+    "source": "https://suumo.jp/library/tf_27/sc_27209/to_1001807421/",
+    "imageSource": "https://suumo.jp/library/img/library_h1_title.png"
+  },
+  "river-garden-miyakojima": {
+    "path": null,
+    "source": "https://rg-miyakojima.jp/"
+  },
+  "cielia-kyobashi": {
+    "path": "../../assets/cielia-kyobashi/hero.jpg",
+    "source": "https://www.cielia.com/m/kyobashi99/",
+    "imageSource": "https://www.cielia.com/m/kyobashi99/crm/images/ogp.jpg"
+  }
+}

@@ -1,0 +1,1466 @@
+{
+  "generatedAt": "2026-08-22T22:05:32.276Z",
+  "cachePolicy": "开发时生成；页面点击不调用路线或地点 API。建议至少每30天刷新一次。",
+  "origin": {
+    "name": "Cielia 守口",
+    "lat": 34.7398907,
+    "lng": 135.5701372
+  },
+  "facilitySummary": {
+    "total": 31,
+    "convenienceStores": 7,
+    "supermarkets": 8,
+    "sports": 12,
+    "transit": 2
+  },
+  "facilities": [
+    {
+      "id": "moriguchi-station",
+      "name": "守口站",
+      "label": "守口站",
+      "iconType": "station",
+      "query": "大阪メトロ守口駅",
+      "category": "transit",
+      "lat": 34.7383302,
+      "lng": 135.5640688
+    },
+    {
+      "id": "moriguchishi-station",
+      "name": "守口市站",
+      "label": "守口市站",
+      "iconType": "station",
+      "query": "京阪守口市駅",
+      "category": "transit",
+      "lat": 34.7353673,
+      "lng": 135.565158
+    },
+    {
+      "id": "aeon-town-moriguchi",
+      "name": "AEON Town守口",
+      "label": "AEON Town守口",
+      "iconType": "mall",
+      "query": "イオンタウン守口",
+      "category": "life",
+      "lat": 34.7378263,
+      "lng": 135.5639727
+    },
+    {
+      "id": "keihan-moriguchi",
+      "name": "京阪百货守口店",
+      "label": "京阪百货守口",
+      "iconType": "mall",
+      "query": "京阪百貨店 守口店",
+      "category": "life",
+      "lat": 34.7362052,
+      "lng": 135.5670411
+    },
+    {
+      "id": "kadoma-gym",
+      "name": "门真市立综合体育馆",
+      "label": "门真综合体育馆",
+      "iconType": "gym",
+      "query": "門真市立総合体育館",
+      "category": "sports",
+      "lat": 34.7403478,
+      "lng": 135.5882355
+    },
+    {
+      "id": "ractab",
+      "name": "RACTAB Dome",
+      "label": "RACTAB Dome",
+      "iconType": "pool",
+      "query": "東和薬品RACTABドーム",
+      "category": "sports",
+      "lat": 34.715761,
+      "lng": 135.5943537
+    },
+    {
+      "id": "moriguchi-gym",
+      "name": "守口市民体育馆",
+      "label": "守口体育馆",
+      "iconType": "gym",
+      "query": "守口市民体育館",
+      "category": "sports",
+      "lat": 34.735207,
+      "lng": 135.567792
+    },
+    {
+      "id": "tsurumi-gym",
+      "name": "鹤见体育中心",
+      "label": "鹤见体育中心",
+      "iconType": "gym",
+      "query": "大阪市立鶴見スポーツセンター",
+      "category": "sports",
+      "lat": 34.7103675,
+      "lng": 135.5769199
+    },
+    {
+      "id": "asahi-gym",
+      "name": "旭体育中心",
+      "label": "旭体育中心",
+      "iconType": "gym",
+      "query": "大阪市立旭スポーツセンター",
+      "category": "sports",
+      "lat": 34.716916,
+      "lng": 135.540806
+    },
+    {
+      "id": "joto-gym",
+      "name": "城东体育中心",
+      "label": "城东体育中心",
+      "iconType": "gym",
+      "query": "大阪市立城東スポーツセンター",
+      "category": "sports",
+      "lat": 34.691586,
+      "lng": 135.536346
+    },
+    {
+      "id": "miyakojima-gym",
+      "name": "都岛体育中心",
+      "label": "都岛体育中心",
+      "iconType": "gym",
+      "query": "大阪市立都島スポーツセンター",
+      "category": "sports",
+      "lat": 34.70812,
+      "lng": 135.522777
+    },
+    {
+      "id": "higashiyodogawa-gym",
+      "name": "东淀川体育中心",
+      "label": "东淀川体育中心",
+      "iconType": "gym",
+      "query": "大阪市立東淀川スポーツセンター",
+      "category": "sports",
+      "lat": 34.7343652,
+      "lng": 135.5196527
+    },
+    {
+      "id": "kita-gym",
+      "name": "北体育中心",
+      "label": "北体育中心",
+      "iconType": "gym",
+      "query": "大阪市立北スポーツセンター",
+      "category": "sports",
+      "lat": 34.7103699,
+      "lng": 135.4926599
+    },
+    {
+      "id": "chuo-gym",
+      "name": "中央体育中心",
+      "label": "中央体育中心",
+      "iconType": "gym",
+      "query": "大阪市立中央スポーツセンター",
+      "category": "sports",
+      "lat": 34.6716173,
+      "lng": 135.5079599
+    },
+    {
+      "id": "neyagawa-gym",
+      "name": "寝屋川市立市民体育馆",
+      "label": "寝屋川体育馆",
+      "iconType": "gym",
+      "query": "寝屋川市立市民体育館",
+      "category": "sports",
+      "lat": 34.748384,
+      "lng": 135.622637
+    },
+    {
+      "id": "daito-gym",
+      "name": "大东市立市民体育馆",
+      "label": "大东市民体育馆",
+      "iconType": "gym",
+      "query": "大東市立市民体育館",
+      "category": "sports",
+      "lat": 34.7086103,
+      "lng": 135.6442415
+    },
+    {
+      "id": "convenience-1",
+      "name": "ローソン 守口竜田通二丁目店",
+      "label": "Lawson 守口竜田通二丁目店",
+      "iconType": "convenience",
+      "category": "life",
+      "vicinity": "守口市竜田通２丁目６−１１",
+      "lat": 34.7384566,
+      "lng": 135.5689865
+    },
+    {
+      "id": "convenience-2",
+      "name": "ファミリーマート 守口竜田通一丁目店",
+      "label": "FamilyMart 守口竜田通一丁目店",
+      "iconType": "convenience",
+      "category": "life",
+      "vicinity": "守口市竜田通１丁目６−２",
+      "lat": 34.7390114,
+      "lng": 135.5675082
+    },
+    {
+      "id": "convenience-3",
+      "name": "ファミリーマート 守口市駅東店",
+      "label": "FamilyMart 守口市駅東店",
+      "iconType": "convenience",
+      "category": "life",
+      "vicinity": "守口市河原町２−４",
+      "lat": 34.7369731,
+      "lng": 135.5674082
+    },
+    {
+      "id": "convenience-4",
+      "name": "セブン-イレブン 守口京阪北本通店",
+      "label": "7-Eleven 守口京阪北本通店",
+      "iconType": "convenience",
+      "category": "life",
+      "vicinity": "守口市京阪北本通３−５",
+      "lat": 34.7416311,
+      "lng": 135.5657318
+    },
+    {
+      "id": "convenience-5",
+      "name": "ローソン 守口橋波西之町店",
+      "label": "Lawson 守口橋波西之町店",
+      "iconType": "convenience",
+      "category": "life",
+      "vicinity": "守口市橋波西之町１丁目１５−１５",
+      "lat": 34.735685,
+      "lng": 135.57226
+    },
+    {
+      "id": "convenience-6",
+      "name": "ミニストップ西三荘駅前店",
+      "label": "ミニストップ西三荘駅前店",
+      "iconType": "convenience",
+      "category": "life",
+      "vicinity": "門真市元町２２−６",
+      "lat": 34.737869,
+      "lng": 135.5758708
+    },
+    {
+      "id": "convenience-7",
+      "name": "ファミリーマート 西三荘店",
+      "label": "FamilyMart 西三荘店",
+      "iconType": "convenience",
+      "category": "life",
+      "vicinity": "守口市橋波東之町１丁目３−８",
+      "lat": 34.73702060000001,
+      "lng": 135.575893
+    },
+    {
+      "id": "supermarket-1",
+      "name": "万代 八雲店",
+      "label": "万代 八雲店",
+      "iconType": "supermarket",
+      "category": "life",
+      "vicinity": "守口市日光町８−１",
+      "lat": 34.7429637,
+      "lng": 135.5645941
+    },
+    {
+      "id": "supermarket-2",
+      "name": "食品館アプロ 守口八雲店",
+      "label": "食品館アプロ 守口八雲店",
+      "iconType": "supermarket",
+      "category": "life",
+      "vicinity": "守口市八雲西町２丁目１５−１８",
+      "lat": 34.7458983,
+      "lng": 135.5663229
+    },
+    {
+      "id": "supermarket-3",
+      "name": "サンディ 守口寺内店",
+      "label": "サンディ 守口寺内店",
+      "iconType": "supermarket",
+      "category": "life",
+      "vicinity": "守口市寺内町２丁目６−１３",
+      "lat": 34.73346619999999,
+      "lng": 135.5647126
+    },
+    {
+      "id": "supermarket-4",
+      "name": "業務スーパー TAKENOKO 門真本町店",
+      "label": "業務スーパー TAKENOKO 門真本町店",
+      "iconType": "supermarket",
+      "category": "life",
+      "vicinity": "門真市本町３９−２２",
+      "lat": 34.73351209999999,
+      "lng": 135.5779105
+    },
+    {
+      "id": "supermarket-5",
+      "name": "関西スーパー デイリーマート西郷店",
+      "label": "関西スーパー デイリーマート西郷店",
+      "iconType": "supermarket",
+      "category": "life",
+      "vicinity": "守口市西郷通２丁目１１−１４",
+      "lat": 34.7302406,
+      "lng": 135.573203
+    },
+    {
+      "id": "supermarket-6",
+      "name": "万代 太子橋店",
+      "label": "万代 太子橋店",
+      "iconType": "supermarket",
+      "category": "life",
+      "vicinity": "守口市京阪本通２丁目１１−２０",
+      "lat": 34.7354403,
+      "lng": 135.5582198
+    },
+    {
+      "id": "supermarket-7",
+      "name": "イオンスタイル大日",
+      "label": "イオンスタイル大日",
+      "iconType": "supermarket",
+      "category": "life",
+      "vicinity": "守口市大日東町１−１８",
+      "lat": 34.7495607,
+      "lng": 135.5802072
+    },
+    {
+      "id": "supermarket-8",
+      "name": "カルディコーヒーファーム ららぽーと門真店",
+      "label": "カルディコーヒーファーム ららぽーと門真店",
+      "iconType": "supermarket",
+      "category": "life",
+      "vicinity": "門真市松生町１−１１ ららぽーと門真 1F",
+      "lat": 34.7322001,
+      "lng": 135.5849489
+    }
+  ],
+  "routes": {
+    "moriguchi": {
+      "provider": "google",
+      "mode": "walking",
+      "name": "守口站",
+      "durationMinutes": 8,
+      "durationText": "8分钟",
+      "distanceMeters": 586,
+      "distanceText": "0.6 公里",
+      "steps": [
+        {
+          "instruction": "向西北前行，走到京街道",
+          "durationText": "4分钟",
+          "distanceText": "0.3 公里"
+        },
+        {
+          "instruction": "向左转，进入京阪国道/国道1号",
+          "durationText": "4分钟",
+          "distanceText": "0.3 公里"
+        },
+        {
+          "instruction": "向左转目的地在左侧",
+          "durationText": "1分钟",
+          "distanceText": "7 米"
+        }
+      ],
+      "path": [
+        {
+          "lat": 34.7398,
+          "lng": 135.57009
+        },
+        {
+          "lat": 34.73998,
+          "lng": 135.56957
+        },
+        {
+          "lat": 34.73994,
+          "lng": 135.56955
+        },
+        {
+          "lat": 34.74037,
+          "lng": 135.56832
+        },
+        {
+          "lat": 34.7405,
+          "lng": 135.56795
+        },
+        {
+          "lat": 34.74063,
+          "lng": 135.56756
+        },
+        {
+          "lat": 34.74068,
+          "lng": 135.56723
+        },
+        {
+          "lat": 34.74026,
+          "lng": 135.56671
+        },
+        {
+          "lat": 34.73987,
+          "lng": 135.5662
+        },
+        {
+          "lat": 34.7395,
+          "lng": 135.56574
+        },
+        {
+          "lat": 34.73941,
+          "lng": 135.56575
+        },
+        {
+          "lat": 34.73945,
+          "lng": 135.56567
+        },
+        {
+          "lat": 34.7393,
+          "lng": 135.56547
+        },
+        {
+          "lat": 34.73912,
+          "lng": 135.56525
+        },
+        {
+          "lat": 34.73885,
+          "lng": 135.56491
+        },
+        {
+          "lat": 34.73884,
+          "lng": 135.56493
+        }
+      ]
+    },
+    "kadomashi": {
+      "provider": "ekispert",
+      "mode": "transit",
+      "name": "门真市",
+      "durationMinutes": 20,
+      "transferCount": 1,
+      "walkingMinutes": 0,
+      "fareYen": 390,
+      "steps": [
+        {
+          "line": "OsakaMetro谷町線",
+          "from": "守口",
+          "to": "大日",
+          "minutes": 3
+        },
+        {
+          "line": "大阪モノレール",
+          "from": "大日",
+          "to": "門真市",
+          "minutes": 2
+        }
+      ],
+      "path": [
+        {
+          "lat": 34.735278,
+          "lng": 135.567222
+        },
+        {
+          "lat": 34.74625,
+          "lng": 135.581055
+        },
+        {
+          "lat": 34.734722,
+          "lng": 135.585278
+        }
+      ]
+    },
+    "kyobashi": {
+      "provider": "ekispert",
+      "mode": "transit",
+      "name": "京桥",
+      "durationMinutes": 21,
+      "transferCount": 0,
+      "walkingMinutes": 9,
+      "fareYen": 240,
+      "steps": [
+        {
+          "line": "徒歩",
+          "from": "守口",
+          "to": "守口市",
+          "minutes": 9
+        },
+        {
+          "line": "京阪本線準急",
+          "from": "守口市",
+          "to": "京橋(大阪府)",
+          "minutes": 5
+        }
+      ],
+      "path": [
+        {
+          "lat": 34.735278,
+          "lng": 135.567222
+        },
+        {
+          "lat": 34.732194,
+          "lng": 135.568027
+        },
+        {
+          "lat": 34.693805,
+          "lng": 135.534972
+        }
+      ]
+    },
+    "osaka": {
+      "provider": "ekispert",
+      "mode": "transit",
+      "name": "梅田 / 大阪站",
+      "durationMinutes": 28,
+      "transferCount": 0,
+      "walkingMinutes": 6,
+      "fareYen": 290,
+      "steps": [
+        {
+          "line": "OsakaMetro谷町線",
+          "from": "守口",
+          "to": "東梅田",
+          "minutes": 16
+        },
+        {
+          "line": "徒歩",
+          "from": "東梅田",
+          "to": "大阪",
+          "minutes": 6
+        }
+      ],
+      "path": [
+        {
+          "lat": 34.735278,
+          "lng": 135.567222
+        },
+        {
+          "lat": 34.697166,
+          "lng": 135.502527
+        },
+        {
+          "lat": 34.698722,
+          "lng": 135.497944
+        }
+      ]
+    },
+    "honmachi": {
+      "provider": "ekispert",
+      "mode": "transit",
+      "name": "本町",
+      "durationMinutes": 35,
+      "transferCount": 1,
+      "walkingMinutes": 3,
+      "fareYen": 290,
+      "steps": [
+        {
+          "line": "OsakaMetro谷町線",
+          "from": "守口",
+          "to": "東梅田",
+          "minutes": 16
+        },
+        {
+          "line": "徒歩(同駅)",
+          "from": "東梅田",
+          "to": "梅田(地下鉄)",
+          "minutes": 3
+        },
+        {
+          "line": "OsakaMetro御堂筋線",
+          "from": "梅田(地下鉄)",
+          "to": "本町",
+          "minutes": 4
+        }
+      ],
+      "path": [
+        {
+          "lat": 34.735278,
+          "lng": 135.567222
+        },
+        {
+          "lat": 34.697166,
+          "lng": 135.502527
+        },
+        {
+          "lat": 34.699583,
+          "lng": 135.500556
+        },
+        {
+          "lat": 34.678666,
+          "lng": 135.501944
+        }
+      ]
+    },
+    "namba": {
+      "provider": "ekispert",
+      "mode": "transit",
+      "name": "难波",
+      "durationMinutes": 39,
+      "transferCount": 2,
+      "walkingMinutes": 0,
+      "fareYen": 290,
+      "steps": [
+        {
+          "line": "OsakaMetro谷町線",
+          "from": "守口",
+          "to": "天神橋筋六丁目",
+          "minutes": 12
+        },
+        {
+          "line": "OsakaMetro堺筋線",
+          "from": "天神橋筋六丁目",
+          "to": "日本橋(大阪府)",
+          "minutes": 9
+        },
+        {
+          "line": "OsakaMetro千日前線",
+          "from": "日本橋(大阪府)",
+          "to": "なんば(地下鉄)",
+          "minutes": 1
+        }
+      ],
+      "path": [
+        {
+          "lat": 34.735278,
+          "lng": 135.567222
+        },
+        {
+          "lat": 34.706944,
+          "lng": 135.514167
+        },
+        {
+          "lat": 34.663722,
+          "lng": 135.508861
+        },
+        {
+          "lat": 34.663056,
+          "lng": 135.501667
+        }
+      ]
+    },
+    "shin-osaka": {
+      "provider": "ekispert",
+      "mode": "transit",
+      "name": "新大阪",
+      "durationMinutes": 36,
+      "transferCount": 1,
+      "walkingMinutes": 3,
+      "fareYen": 290,
+      "steps": [
+        {
+          "line": "OsakaMetro谷町線",
+          "from": "守口",
+          "to": "東梅田",
+          "minutes": 16
+        },
+        {
+          "line": "徒歩(同駅)",
+          "from": "東梅田",
+          "to": "梅田(地下鉄)",
+          "minutes": 3
+        },
+        {
+          "line": "OsakaMetro御堂筋線",
+          "from": "梅田(地下鉄)",
+          "to": "新大阪",
+          "minutes": 6
+        }
+      ],
+      "path": [
+        {
+          "lat": 34.735278,
+          "lng": 135.567222
+        },
+        {
+          "lat": 34.697166,
+          "lng": 135.502527
+        },
+        {
+          "lat": 34.699583,
+          "lng": 135.500556
+        },
+        {
+          "lat": 34.73,
+          "lng": 135.502778
+        }
+      ]
+    },
+    "itami": {
+      "provider": "ekispert",
+      "mode": "transit",
+      "name": "大阪伊丹机场",
+      "durationMinutes": 53,
+      "transferCount": 1,
+      "walkingMinutes": 0,
+      "fareYen": 690,
+      "steps": [
+        {
+          "line": "OsakaMetro谷町線",
+          "from": "守口",
+          "to": "大日",
+          "minutes": 3
+        },
+        {
+          "line": "大阪モノレール",
+          "from": "大日",
+          "to": "大阪空港(大阪モノレール)",
+          "minutes": 35
+        }
+      ],
+      "path": [
+        {
+          "lat": 34.735278,
+          "lng": 135.567222
+        },
+        {
+          "lat": 34.74625,
+          "lng": 135.581055
+        },
+        {
+          "lat": 34.788194,
+          "lng": 135.444805
+        }
+      ]
+    },
+    "kansai": {
+      "provider": "ekispert",
+      "mode": "transit",
+      "name": "关西机场",
+      "durationMinutes": 81,
+      "transferCount": 1,
+      "walkingMinutes": 0,
+      "fareYen": 2160,
+      "steps": [
+        {
+          "line": "OsakaMetro谷町線",
+          "from": "守口",
+          "to": "天王寺",
+          "minutes": 30
+        },
+        {
+          "line": "ＪＲ特急はるか",
+          "from": "天王寺",
+          "to": "関西空港(鉄道)",
+          "minutes": 29
+        }
+      ],
+      "path": [
+        {
+          "lat": 34.735278,
+          "lng": 135.567222
+        },
+        {
+          "lat": 34.643889,
+          "lng": 135.516667
+        },
+        {
+          "lat": 34.432639,
+          "lng": 135.246277
+        }
+      ]
+    },
+    "kadoma-gym": {
+      "provider": "google",
+      "mode": "driving",
+      "name": "门真市立综合体育馆",
+      "durationMinutes": 8,
+      "durationText": "8分钟",
+      "distanceMeters": 2164,
+      "distanceText": "2.2 公里",
+      "steps": [
+        {
+          "instruction": "向东南行驶",
+          "durationText": "1分钟",
+          "distanceText": "55 米"
+        },
+        {
+          "instruction": "向右转，前往府道158号",
+          "durationText": "1分钟",
+          "distanceText": "0.2 公里"
+        },
+        {
+          "instruction": "向左转，进入府道158号",
+          "durationText": "6分钟",
+          "distanceText": "1.8 公里"
+        },
+        {
+          "instruction": "向左转，进入市道 浜町桑才線目的地在左侧",
+          "durationText": "1分钟",
+          "distanceText": "0.1 公里"
+        }
+      ],
+      "path": [
+        {
+          "lat": 34.73978,
+          "lng": 135.57008
+        },
+        {
+          "lat": 34.73959,
+          "lng": 135.57063
+        },
+        {
+          "lat": 34.73919,
+          "lng": 135.57043
+        },
+        {
+          "lat": 34.73882,
+          "lng": 135.57024
+        },
+        {
+          "lat": 34.73805,
+          "lng": 135.56985
+        },
+        {
+          "lat": 34.7379,
+          "lng": 135.57025
+        },
+        {
+          "lat": 34.73787,
+          "lng": 135.5703
+        },
+        {
+          "lat": 34.73783,
+          "lng": 135.57033
+        },
+        {
+          "lat": 34.73786,
+          "lng": 135.5711
+        },
+        {
+          "lat": 34.73781,
+          "lng": 135.57306
+        },
+        {
+          "lat": 34.73781,
+          "lng": 135.57447
+        },
+        {
+          "lat": 34.73775,
+          "lng": 135.57506
+        },
+        {
+          "lat": 34.73765,
+          "lng": 135.57556
+        },
+        {
+          "lat": 34.73747,
+          "lng": 135.57614
+        },
+        {
+          "lat": 34.73731,
+          "lng": 135.5767
+        },
+        {
+          "lat": 34.73728,
+          "lng": 135.57693
+        },
+        {
+          "lat": 34.73723,
+          "lng": 135.57733
+        },
+        {
+          "lat": 34.73723,
+          "lng": 135.57804
+        },
+        {
+          "lat": 34.73725,
+          "lng": 135.57819
+        },
+        {
+          "lat": 34.73732,
+          "lng": 135.57869
+        },
+        {
+          "lat": 34.73747,
+          "lng": 135.57942
+        },
+        {
+          "lat": 34.73791,
+          "lng": 135.58152
+        },
+        {
+          "lat": 34.73808,
+          "lng": 135.58222
+        },
+        {
+          "lat": 34.73818,
+          "lng": 135.58267
+        },
+        {
+          "lat": 34.73826,
+          "lng": 135.58314
+        },
+        {
+          "lat": 34.73839,
+          "lng": 135.58396
+        },
+        {
+          "lat": 34.73862,
+          "lng": 135.58582
+        },
+        {
+          "lat": 34.73893,
+          "lng": 135.5883
+        },
+        {
+          "lat": 34.73899,
+          "lng": 135.58863
+        },
+        {
+          "lat": 34.73906,
+          "lng": 135.58894
+        },
+        {
+          "lat": 34.73978,
+          "lng": 135.58888
+        },
+        {
+          "lat": 34.74032,
+          "lng": 135.58883
+        }
+      ]
+    },
+    "ractab": {
+      "provider": "google",
+      "mode": "driving",
+      "name": "RACTAB Dome",
+      "durationMinutes": 14,
+      "durationText": "14分钟",
+      "distanceMeters": 6259,
+      "distanceText": "6.3 公里",
+      "steps": [
+        {
+          "instruction": "向西北行驶",
+          "durationText": "1分钟",
+          "distanceText": "49 米"
+        },
+        {
+          "instruction": "向右转",
+          "durationText": "1分钟",
+          "distanceText": "94 米"
+        },
+        {
+          "instruction": "稍向左转",
+          "durationText": "1分钟",
+          "distanceText": "0.2 公里"
+        },
+        {
+          "instruction": "在関西電力前（交差点）向右转，进入京阪国道/国道1号",
+          "durationText": "2分钟",
+          "distanceText": "1.1 公里"
+        },
+        {
+          "instruction": "继续沿京阪国道/国道1号直行",
+          "durationText": "1分钟",
+          "distanceText": "54 米"
+        },
+        {
+          "instruction": "在大日（交差点）向右转 （4/Kinki Expressway/Daito-tsurumi IC/Matsubara/Dainikeihan Expressway/Sakai/大阪府道2号的路标）",
+          "durationText": "1分钟",
+          "distanceText": "0.3 公里"
+        },
+        {
+          "instruction": "走府道2号",
+          "durationText": "2分钟",
+          "distanceText": "1.4 公里"
+        },
+        {
+          "instruction": "继续沿府道2号直行",
+          "durationText": "2分钟",
+          "distanceText": "0.8 公里"
+        },
+        {
+          "instruction": "靠右继续沿府道2号行驶",
+          "durationText": "2分钟",
+          "distanceText": "1.1 公里"
+        },
+        {
+          "instruction": "上匝道，前往12/Dainikeihan Expressway/Dainikeihan Kadoma IC/Kyoto",
+          "durationText": "1分钟",
+          "distanceText": "53 米"
+        },
+        {
+          "instruction": "走府道2号",
+          "durationText": "2分钟",
+          "distanceText": "0.7 公里"
+        },
+        {
+          "instruction": "在茨田大宮２（交差点）向左转，进入鶴見区第9402号線",
+          "durationText": "1分钟",
+          "distanceText": "86 米"
+        },
+        {
+          "instruction": "向左转，继续沿鶴見区第9402号線前行",
+          "durationText": "1分钟",
+          "distanceText": "0.3 公里"
+        },
+        {
+          "instruction": "向右转目的地在右侧",
+          "durationText": "1分钟",
+          "distanceText": "0.1 公里"
+        }
+      ],
+      "path": [
+        {
+          "lat": 34.73978,
+          "lng": 135.57008
+        },
+        {
+          "lat": 34.73995,
+          "lng": 135.56958
+        },
+        {
+          "lat": 34.74031,
+          "lng": 135.56977
+        },
+        {
+          "lat": 34.74073,
+          "lng": 135.56999
+        },
+        {
+          "lat": 34.74078,
+          "lng": 135.56992
+        },
+        {
+          "lat": 34.74089,
+          "lng": 135.56986
+        },
+        {
+          "lat": 34.74127,
+          "lng": 135.56963
+        },
+        {
+          "lat": 34.74136,
+          "lng": 135.56962
+        },
+        {
+          "lat": 34.74256,
+          "lng": 135.56955
+        },
+        {
+          "lat": 34.74265,
+          "lng": 135.56953
+        },
+        {
+          "lat": 34.74297,
+          "lng": 135.56994
+        },
+        {
+          "lat": 34.74304,
+          "lng": 135.57003
+        },
+        {
+          "lat": 34.74418,
+          "lng": 135.57148
+        },
+        {
+          "lat": 34.74531,
+          "lng": 135.57291
+        },
+        {
+          "lat": 34.74659,
+          "lng": 135.57454
+        },
+        {
+          "lat": 34.74711,
+          "lng": 135.57521
+        },
+        {
+          "lat": 34.7475,
+          "lng": 135.57569
+        },
+        {
+          "lat": 34.74861,
+          "lng": 135.57706
+        },
+        {
+          "lat": 34.74886,
+          "lng": 135.5774
+        },
+        {
+          "lat": 34.74915,
+          "lng": 135.57778
+        },
+        {
+          "lat": 34.74935,
+          "lng": 135.57803
+        },
+        {
+          "lat": 34.74949,
+          "lng": 135.5782
+        },
+        {
+          "lat": 34.74941,
+          "lng": 135.57827
+        },
+        {
+          "lat": 34.74931,
+          "lng": 135.5784
+        },
+        {
+          "lat": 34.74929,
+          "lng": 135.57842
+        },
+        {
+          "lat": 34.74895,
+          "lng": 135.57861
+        },
+        {
+          "lat": 34.74801,
+          "lng": 135.57913
+        },
+        {
+          "lat": 34.74754,
+          "lng": 135.57939
+        },
+        {
+          "lat": 34.74748,
+          "lng": 135.57943
+        },
+        {
+          "lat": 34.74745,
+          "lng": 135.57951
+        },
+        {
+          "lat": 34.74696,
+          "lng": 135.57978
+        },
+        {
+          "lat": 34.74599,
+          "lng": 135.58032
+        },
+        {
+          "lat": 34.7443,
+          "lng": 135.58128
+        },
+        {
+          "lat": 34.74338,
+          "lng": 135.58172
+        },
+        {
+          "lat": 34.74303,
+          "lng": 135.58186
+        },
+        {
+          "lat": 34.74222,
+          "lng": 135.58209
+        },
+        {
+          "lat": 34.74156,
+          "lng": 135.58225
+        },
+        {
+          "lat": 34.74124,
+          "lng": 135.5823
+        },
+        {
+          "lat": 34.74007,
+          "lng": 135.58235
+        },
+        {
+          "lat": 34.73971,
+          "lng": 135.58237
+        },
+        {
+          "lat": 34.73961,
+          "lng": 135.58238
+        },
+        {
+          "lat": 34.73852,
+          "lng": 135.5824
+        },
+        {
+          "lat": 34.73817,
+          "lng": 135.5824
+        },
+        {
+          "lat": 34.73751,
+          "lng": 135.5824
+        },
+        {
+          "lat": 34.73672,
+          "lng": 135.58241
+        },
+        {
+          "lat": 34.73591,
+          "lng": 135.5824
+        },
+        {
+          "lat": 34.73551,
+          "lng": 135.58242
+        },
+        {
+          "lat": 34.73505,
+          "lng": 135.58243
+        },
+        {
+          "lat": 34.73411,
+          "lng": 135.58245
+        },
+        {
+          "lat": 34.73271,
+          "lng": 135.58247
+        },
+        {
+          "lat": 34.73112,
+          "lng": 135.58251
+        },
+        {
+          "lat": 34.73,
+          "lng": 135.58253
+        },
+        {
+          "lat": 34.72922,
+          "lng": 135.58256
+        },
+        {
+          "lat": 34.72905,
+          "lng": 135.58257
+        },
+        {
+          "lat": 34.72877,
+          "lng": 135.58264
+        },
+        {
+          "lat": 34.72823,
+          "lng": 135.58276
+        },
+        {
+          "lat": 34.72799,
+          "lng": 135.58284
+        },
+        {
+          "lat": 34.72783,
+          "lng": 135.5829
+        },
+        {
+          "lat": 34.72742,
+          "lng": 135.58309
+        },
+        {
+          "lat": 34.72544,
+          "lng": 135.58424
+        },
+        {
+          "lat": 34.72418,
+          "lng": 135.58497
+        },
+        {
+          "lat": 34.7233,
+          "lng": 135.58549
+        },
+        {
+          "lat": 34.72167,
+          "lng": 135.58644
+        },
+        {
+          "lat": 34.71925,
+          "lng": 135.58785
+        },
+        {
+          "lat": 34.7192,
+          "lng": 135.58793
+        },
+        {
+          "lat": 34.71913,
+          "lng": 135.588
+        },
+        {
+          "lat": 34.71893,
+          "lng": 135.58817
+        },
+        {
+          "lat": 34.71889,
+          "lng": 135.58822
+        },
+        {
+          "lat": 34.71866,
+          "lng": 135.58838
+        },
+        {
+          "lat": 34.71806,
+          "lng": 135.58874
+        },
+        {
+          "lat": 34.71748,
+          "lng": 135.58907
+        },
+        {
+          "lat": 34.71658,
+          "lng": 135.58959
+        },
+        {
+          "lat": 34.71604,
+          "lng": 135.58992
+        },
+        {
+          "lat": 34.71494,
+          "lng": 135.59053
+        },
+        {
+          "lat": 34.7139,
+          "lng": 135.59113
+        },
+        {
+          "lat": 34.71306,
+          "lng": 135.59163
+        },
+        {
+          "lat": 34.71307,
+          "lng": 135.59186
+        },
+        {
+          "lat": 34.7131,
+          "lng": 135.59235
+        },
+        {
+          "lat": 34.71309,
+          "lng": 135.59257
+        },
+        {
+          "lat": 34.7139,
+          "lng": 135.59273
+        },
+        {
+          "lat": 34.71478,
+          "lng": 135.59284
+        },
+        {
+          "lat": 34.7154,
+          "lng": 135.5929
+        },
+        {
+          "lat": 34.71538,
+          "lng": 135.59345
+        },
+        {
+          "lat": 34.71602,
+          "lng": 135.59351
+        },
+        {
+          "lat": 34.71605,
+          "lng": 135.59351
+        }
+      ]
+    },
+    "moriguchi-gym": {
+      "provider": "google",
+      "mode": "driving",
+      "name": "守口市民体育馆",
+      "durationMinutes": 4,
+      "durationText": "4分钟",
+      "distanceMeters": 966,
+      "distanceText": "1.0 公里",
+      "steps": [
+        {
+          "instruction": "向西北行驶",
+          "durationText": "1分钟",
+          "distanceText": "49 米"
+        },
+        {
+          "instruction": "向左转",
+          "durationText": "2分钟",
+          "distanceText": "0.3 公里"
+        },
+        {
+          "instruction": "向右转",
+          "durationText": "1分钟",
+          "distanceText": "0.4 公里"
+        },
+        {
+          "instruction": "向左转，进入守口市道守口184号線",
+          "durationText": "1分钟",
+          "distanceText": "0.2 公里"
+        },
+        {
+          "instruction": "向右转，进入守口市道橋波10号線目的地在左侧",
+          "durationText": "1分钟",
+          "distanceText": "16 米"
+        }
+      ],
+      "path": [
+        {
+          "lat": 34.73978,
+          "lng": 135.57008
+        },
+        {
+          "lat": 34.73995,
+          "lng": 135.56958
+        },
+        {
+          "lat": 34.73956,
+          "lng": 135.56938
+        },
+        {
+          "lat": 34.73881,
+          "lng": 135.569
+        },
+        {
+          "lat": 34.73791,
+          "lng": 135.56854
+        },
+        {
+          "lat": 34.73761,
+          "lng": 135.56838
+        },
+        {
+          "lat": 34.7375,
+          "lng": 135.56843
+        },
+        {
+          "lat": 34.73732,
+          "lng": 135.56792
+        },
+        {
+          "lat": 34.73711,
+          "lng": 135.56741
+        },
+        {
+          "lat": 34.7368,
+          "lng": 135.56681
+        },
+        {
+          "lat": 34.73647,
+          "lng": 135.56631
+        },
+        {
+          "lat": 34.73597,
+          "lng": 135.56569
+        },
+        {
+          "lat": 34.73581,
+          "lng": 135.56549
+        },
+        {
+          "lat": 34.73556,
+          "lng": 135.56491
+        },
+        {
+          "lat": 34.73546,
+          "lng": 135.56508
+        },
+        {
+          "lat": 34.73535,
+          "lng": 135.56544
+        },
+        {
+          "lat": 34.73533,
+          "lng": 135.56567
+        },
+        {
+          "lat": 34.73522,
+          "lng": 135.56653
+        },
+        {
+          "lat": 34.73521,
+          "lng": 135.56673
+        },
+        {
+          "lat": 34.73523,
+          "lng": 135.56695
+        },
+        {
+          "lat": 34.73525,
+          "lng": 135.56707
+        },
+        {
+          "lat": 34.73527,
+          "lng": 135.56717
+        },
+        {
+          "lat": 34.73523,
+          "lng": 135.56718
+        },
+        {
+          "lat": 34.73513,
+          "lng": 135.56722
+        }
+      ]
+    }
+  }
+}
