@@ -1,0 +1,12 @@
+/* Preserve a comfortable 1080p reading scale on high-resolution desktop displays. */
+@media (min-width: 2200px) and (max-width: 3199px) {
+  html { zoom: 1.25; }
+}
+
+@media (min-width: 3200px) and (min-height: 1700px) {
+  html { zoom: 2; }
+}
+
+@media (max-width: 900px) {
+  html { zoom: 1; }
+}

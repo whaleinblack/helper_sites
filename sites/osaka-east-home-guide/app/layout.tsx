@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./resolution.css";
 
 export const metadata: Metadata = {
   title: "大阪东线置业研究所｜门真市通勤购房地图",

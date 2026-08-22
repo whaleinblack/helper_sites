@@ -18,7 +18,7 @@ const areaData = [
 const projects = [
   {name:"シーンズ関目高殿 スクエアガーデン",area:"关目高殿",brand:"大阪ガス都市开发 × 京阪电铁不动产",type:"在售新筑",facts:"134户 · 站3分 · 2027年交付",price:"先着顺 5,840–7,390万",url:"https://ogud.co.jp/scenes/sekimetakadono134/outline/",hot:true},
   {name:"ウエリス大日",area:"大日",brand:"NTT都市开发系",type:"在售新筑",facts:"409户 · 谷町线始发 · 大规模",price:"3LDK预告 4,400–6,000万台",url:"https://wellith.jp/dainichi409/outline/",hot:true},
-  {name:"シティタワー古川橋",area:"古川桥（邻近）",brand:"住友不动产 × 京阪电铁不动产",type:"在售Tower",facts:"41层 · 648户 · 站4分",price:"4,800–8,700万",url:"https://www.sumitomo-rd-mansion.jp/kansai/furukawabashi/",hot:true},
+  {name:"シティタワー古川橋",area:"古川桥（邻近）",brand:"住友不动产 × 京阪电铁不动产",type:"在售Tower · 中文详解",facts:"41层 · 648户 · 站4分",price:"4,800–8,700万",url:"properties/city-tower-furukawabashi/",hot:true},
   {name:"パークホームズLaLa門真",area:"门真市",brand:"三井不动产Residential",type:"次新中古",facts:"2023年 · LaLaport生活圈",price:"重点观察挂牌与成交差",url:"https://www.mfr.co.jp/",hot:false},
   {name:"プラウド関目",area:"关目",brand:"野村不动产",type:"品牌中古",facts:"站近 · 大阪市内 · 家庭型",price:"10年内中古候选",url:"https://www.proud-web.jp/",hot:false},
   {name:"ジオ関目高殿",area:"关目高殿",brand:"阪急阪神不动产",type:"品牌中古",facts:"谷町线站近 · 3LDK流通",price:"逐户核验楼层与改装",url:"https://geo.8984.jp/",hot:false},
@@ -43,7 +43,7 @@ export default function Home(){
   const active=areaData.find(a=>a.id===selected) ?? areaData[0];
   const shownProjects=useMemo(()=>projects.filter(p=>projectFilter==="全部" || (projectFilter==="新筑/Tower"?p.hot:p.area.includes(projectFilter))),[projectFilter]);
   return <main>
-    <nav className="topbar"><a className="brand" href="#top"><span>住</span> 大阪东线置业研究所</a><div className="navlinks"><a href="#compare">区域对比</a><a href="#detail">深度报告</a><a href="#projects">品牌楼盘</a><a href="#sources">数据来源</a></div><div className="date-pill">数据更新 · 2026.08.21</div></nav>
+    <nav className="topbar"><a className="brand" href="#top"><span>住</span> 大阪东线置业研究所</a><div className="navlinks"><a href="#compare">区域对比</a><a href="#detail">深度报告</a><a href="#projects">推荐物件</a><a href="#sources">数据来源</a></div><div className="date-pill">数据更新 · 2026.08.23</div></nav>
     <section className="hero" id="top"><div className="rail-art" aria-hidden="true"><div className="rail-line blue-line"><i/><i/><i/><i/></div><div className="rail-line red-line"><i/><i/><i/><i/><i/></div></div><div className="eyebrow"><span/> KADOMASHI COMMUTE · BUYER&apos;S FIELD GUIDE</div><h1>住得舒服，<br/><em>通勤不妥协。</em></h1><p className="hero-copy">以门真市站为圆心，沿谷町线与京阪本线，筛选大阪东部真正值得买的生活圈。价格、通勤、保值与风险，一页看清。</p><div className="hero-actions"><a className="primary" href="#compare">查看区域排名 <b>→</b></a><a className="secondary" href="#market">先看市场结论</a></div><div className="hero-stats"><div><strong>7</strong><span>个重点生活圈</span></div><div><strong>6–22<small>分</small></strong><span>门真市通勤带</span></div><div><strong>¥2,700<small>万起</small></strong><span>10年内中古预算</span></div></div></section>
     <section className="summary-strip"><span>一句话结论</span><p><b>关目高殿</b>赢在双线与保值，<b>守口</b>赢在通勤成本，<b>大日</b>赢在一站式生活。</p><i>向下探索 ↓</i></section>
 

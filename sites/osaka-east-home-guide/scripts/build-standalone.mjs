@@ -1,10 +1,11 @@
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 const projectRoot = resolve(import.meta.dirname, "..");
 const bundleDir = resolve(projectRoot, "standalone-dist");
 const outputDir = resolve(projectRoot, "offline");
 const outputFile = resolve(outputDir, "osaka-east-home-guide.html");
+const publishDir = resolve(projectRoot, "publish");
 
 const cssFile = (await readdir(bundleDir)).find((file) => file.endsWith(".css"));
 
@@ -40,8 +41,27 @@ const html = `<!doctype html>
 </html>
 `;
 
+function createPublishedHtml({ title, description, configPath }) {
+  return html
+    .replace("<title>大阪东线置业研究所｜门真市通勤购房地图</title>", `<title>${title}</title>`)
+    .replace('content="大阪谷町线与京阪本线购房区域研究：通勤、房价、楼盘与风险。"', `content="${description}"`)
+    .replace("<script>", `<script src="${configPath}"></script>\n    <script>`);
+}
+
 await mkdir(outputDir, { recursive: true });
 await writeFile(outputFile, html, "utf8");
+await mkdir(resolve(publishDir, "properties/city-tower-furukawabashi"), { recursive: true });
+await cp(resolve(projectRoot, "public/assets"), resolve(publishDir, "assets"), { recursive: true });
+await writeFile(resolve(publishDir, "index.html"), createPublishedHtml({
+  title: "大阪东线置业研究所｜门真市通勤购房地图",
+  description: "大阪谷町线与京阪本线购房区域研究：通勤、房价、楼盘与风险。",
+  configPath: "./config.js",
+}), "utf8");
+await writeFile(resolve(publishDir, "properties/city-tower-furukawabashi/index.html"), createPublishedHtml({
+  title: "City Tower 古川桥｜大阪东线置业研究所",
+  description: "City Tower 古川桥的户型价格、设计、停车、通勤、体育设施与投资价值研究。",
+  configPath: "../../config.js",
+}), "utf8");
 
 const forbiddenReferences = [
   /<script[^>]+src=/i,
@@ -58,3 +78,4 @@ for (const pattern of forbiddenReferences) {
 }
 
 console.log(`Created ${outputFile}`);
+console.log(`Created publishable site in ${publishDir}`);
