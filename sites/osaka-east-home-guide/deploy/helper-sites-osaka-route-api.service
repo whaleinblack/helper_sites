@@ -1,0 +1,25 @@
+[Unit]
+Description=Osaka East Home Guide Ekispert Route API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=codex
+Group=codex
+EnvironmentFile=/srv/travel_planner/shared/secrets/providers/.env
+Environment=PORT=4187
+ExecStart=/usr/bin/node /srv/helper_sites/services/osaka-route-api/route-api.mjs
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

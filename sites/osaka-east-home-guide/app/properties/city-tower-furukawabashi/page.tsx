@@ -34,28 +34,45 @@ const sections = [
 ] as const;
 
 const facilities = [
-  { name: "古川桥站", query: "京阪古川橋駅", category: "transit" as const },
-  { name: "门真市站", query: "京阪門真市駅", category: "transit" as const },
-  { name: "そよら古川桥站前", query: "そよら古川橋駅前", category: "life" as const },
-  { name: "Foods Market Satake", query: "Foods Market satake コア古川橋店", category: "life" as const },
-  { name: "LaLaport / Outlet 门真", query: "ららぽーと門真", category: "life" as const },
-  { name: "Costco 门真", query: "コストコホールセール 門真倉庫店", category: "life" as const },
-  { name: "KADOMADO 文化创造图书馆", query: "門真市立文化創造図書館 KADOMADO", category: "life" as const },
-  { name: "门真市立综合体育馆", query: "門真市立総合体育館", category: "sports" as const },
-  { name: "RACTAB Dome", query: "東和薬品RACTABドーム", category: "sports" as const },
-  { name: "守口市民体育馆", query: "守口市民体育館", category: "sports" as const },
-  { name: "鹤见体育中心", query: "大阪市立鶴見スポーツセンター", category: "sports" as const },
-  { name: "旭体育中心", query: "大阪市立旭スポーツセンター", category: "sports" as const },
-  { name: "城东体育中心", query: "大阪市立城東スポーツセンター", category: "sports" as const },
+  { name: "古川桥站", label: "古川桥站", icon: "🚉", query: "京阪古川橋駅", category: "transit" as const },
+  { name: "门真市站", label: "门真市站", icon: "🚉", query: "京阪門真市駅", category: "transit" as const },
+  { name: "そよら古川桥站前", label: "Soyora", icon: "🛍", query: "そよら古川橋駅前", category: "life" as const },
+  { name: "Foods Market Satake", label: "Satake", icon: "🛒", query: "Foods Market satake コア古川橋店", category: "life" as const },
+  { name: "LaLaport / Outlet 门真", label: "LaLaport门真", icon: "🛍", query: "ららぽーと門真", category: "life" as const },
+  { name: "Costco 门真", label: "Costco门真", icon: "🛒", query: "コストコホールセール 門真倉庫店", category: "life" as const },
+  { name: "KADOMADO 文化创造图书馆", label: "KADOMADO", icon: "📚", query: "門真市立文化創造図書館 KADOMADO", category: "life" as const },
+  { name: "门真市立综合体育馆", label: "门真综合体育馆", icon: "🏸", query: "門真市立総合体育館", category: "sports" as const },
+  { name: "RACTAB Dome", label: "RACTAB Dome", icon: "🏊", query: "東和薬品RACTABドーム", category: "sports" as const },
+  { name: "守口市民体育馆", label: "守口体育馆", icon: "🏸", query: "守口市民体育館", category: "sports" as const },
+  { name: "鹤见体育中心", label: "鹤见体育中心", icon: "🏸", query: "大阪市立鶴見スポーツセンター", category: "sports" as const },
+  { name: "旭体育中心", label: "旭体育中心", icon: "🏸", query: "大阪市立旭スポーツセンター", category: "sports" as const },
+  { name: "城东体育中心", label: "城东体育中心", icon: "🏸", query: "大阪市立城東スポーツセンター", category: "sports" as const },
 ];
 
-const routeTargets: Array<{ name: string; sub: string; query: string; mode: TravelMode }> = [
-  { name: "古川桥站", sub: "步行起点", query: "京阪古川橋駅", mode: "WALKING" },
-  { name: "京桥", sub: "京阪本线", query: "京橋駅 大阪", mode: "TRANSIT" },
-  { name: "梅田 / 大阪站", sub: "京桥换乘 JR", query: "大阪駅", mode: "TRANSIT" },
-  { name: "新大阪", sub: "新干线门户", query: "新大阪駅", mode: "TRANSIT" },
-  { name: "大阪伊丹机场", sub: "门真市换单轨", query: "大阪国際空港", mode: "TRANSIT" },
-  { name: "关西机场", sub: "寝屋川市巴士或铁路", query: "関西国際空港", mode: "TRANSIT" },
+function createPoiLabel(label: string, icon: string, category: MapCategory, isHome = false) {
+  const root = document.createElement("div");
+  root.className = `map-poi-label ${category}${isHome ? " home" : ""}`;
+  root.setAttribute("aria-label", label);
+  const iconNode = document.createElement("span");
+  iconNode.className = "map-poi-icon";
+  iconNode.textContent = icon;
+  const nameNode = document.createElement("span");
+  nameNode.className = "map-poi-name";
+  nameNode.textContent = label;
+  root.append(iconNode, nameNode);
+  return root;
+}
+
+const routeTargets: Array<{ id: string; provider: "google" | "ekispert"; name: string; sub: string; query: string; mode: TravelMode }> = [
+  { id: "furukawabashi", provider: "google", name: "古川桥站", sub: "步行 · Google", query: "京阪古川橋駅", mode: "WALKING" },
+  { id: "kyobashi", provider: "ekispert", name: "京桥", sub: "京阪本线", query: "京橋駅 大阪", mode: "TRANSIT" },
+  { id: "osaka", provider: "ekispert", name: "梅田 / 大阪站", sub: "京桥换乘 JR", query: "大阪駅", mode: "TRANSIT" },
+  { id: "shin-osaka", provider: "ekispert", name: "新大阪", sub: "新干线门户", query: "新大阪駅", mode: "TRANSIT" },
+  { id: "itami", provider: "ekispert", name: "大阪伊丹机场", sub: "铁路 / 单轨", query: "大阪国際空港", mode: "TRANSIT" },
+  { id: "kansai", provider: "ekispert", name: "关西机场", sub: "铁路路线", query: "関西国際空港", mode: "TRANSIT" },
+  { id: "lalaport", provider: "google", name: "LaLaport门真", sub: "驾车 · Google", query: "ららぽーと門真", mode: "DRIVING" },
+  { id: "costco", provider: "google", name: "Costco门真", sub: "驾车 · Google", query: "コストコホールセール 門真倉庫店", mode: "DRIVING" },
+  { id: "ractab", provider: "google", name: "RACTAB Dome", sub: "驾车 · Google", query: "東和薬品RACTABドーム", mode: "DRIVING" },
 ];
 
 declare global {
@@ -109,7 +126,8 @@ export default function CityTowerFurukawabashi() {
   const mapInstance = useRef<any>(null);
   const directionsService = useRef<any>(null);
   const directionsRenderer = useRef<any>(null);
-  const markers = useRef<Array<{ marker: any; category: MapCategory }>>([]);
+  const ekispertPolyline = useRef<any>(null);
+  const markers = useRef<Array<{ setVisible: (visible: boolean) => void; category: MapCategory }>>([]);
   const [activeSection, setActiveSection] = useState("overview");
   const [mapCategory, setMapCategory] = useState<MapCategory>("all");
   const [mapStatus, setMapStatus] = useState("正在载入同级 Google 地图…");
@@ -152,9 +170,33 @@ export default function CityTowerFurukawabashi() {
         directionsService.current = new google.maps.DirectionsService();
         directionsRenderer.current = new google.maps.DirectionsRenderer({ map, suppressMarkers: false, polylineOptions: { strokeColor: "#e6533f", strokeWeight: 6 } });
         const info = new google.maps.InfoWindow();
-        const home = new google.maps.Marker({ map, position: center, title: "City Tower 古川桥", icon: { path: google.maps.SymbolPath.CIRCLE, fillColor: "#e6533f", fillOpacity: 1, strokeColor: "#ffffff", strokeWeight: 4, scale: 11 } });
-        home.addListener("click", () => { info.setContent("<strong>City Tower 古川桥</strong><br>研究坐标：幸福町14-15周边"); info.open({ map, anchor: home }); });
-        markers.current.push({ marker: home, category: "all" });
+        const addLabeledMarker = ({ position, title, label, icon, category, isHome = false }: { position: any; title: string; label: string; icon: string; category: MapCategory; isHome?: boolean }) => {
+          const color = isHome ? "#e6533f" : category === "sports" ? "#2d7f71" : category === "life" ? "#d99a35" : "#3f72af";
+          if (google.maps.marker?.AdvancedMarkerElement && config.googleMapId) {
+            const marker = new google.maps.marker.AdvancedMarkerElement({
+              map,
+              position,
+              title,
+              content: createPoiLabel(label, icon, category, isHome),
+              gmpClickable: true,
+              zIndex: isHome ? 1000 : category === "transit" ? 600 : 400,
+              collisionBehavior: google.maps.CollisionBehavior?.REQUIRED,
+            });
+            return { marker, setVisible: (visible: boolean) => { marker.map = visible ? map : null; } };
+          }
+          const marker = new google.maps.Marker({
+            map,
+            position,
+            title,
+            label: { text: `${icon} ${label}`, color: "#10241f", fontSize: "13px", fontWeight: "700" },
+            icon: { path: google.maps.SymbolPath.CIRCLE, fillColor: color, fillOpacity: 1, strokeColor: "#fff", strokeWeight: 3, scale: isHome ? 11 : 8, labelOrigin: new google.maps.Point(0, -18) },
+          });
+          return { marker, setVisible: (visible: boolean) => marker.setVisible(visible) };
+        };
+
+        const homeEntry = addLabeledMarker({ position: center, title: "City Tower 古川桥", label: "City Tower 古川桥", icon: "🏙", category: "all", isHome: true });
+        homeEntry.marker.addListener("click", () => { info.setContent("<strong>City Tower 古川桥</strong><br>研究坐标：幸福町14-15周边"); info.open({ map, anchor: homeEntry.marker }); });
+        markers.current.push({ setVisible: homeEntry.setVisible, category: "all" });
 
         const geocoder = new google.maps.Geocoder();
         await Promise.all(facilities.map(async (facility) => {
@@ -162,14 +204,9 @@ export default function CityTowerFurukawabashi() {
             const response = await geocoder.geocode({ address: facility.query, region: "jp" });
             const location = response.results?.[0]?.geometry?.location;
             if (!location || cancelled) return;
-            const marker = new google.maps.Marker({
-              map,
-              position: location,
-              title: facility.name,
-              icon: { path: google.maps.SymbolPath.CIRCLE, fillColor: facility.category === "sports" ? "#2d7f71" : facility.category === "life" ? "#d99a35" : "#3f72af", fillOpacity: 1, strokeColor: "#fff", strokeWeight: 2, scale: 7 },
-            });
-            marker.addListener("click", () => { info.setContent(`<strong>${facility.name}</strong><br>${facility.category === "sports" ? "运动设施" : facility.category === "life" ? "生活设施" : "交通节点"}`); info.open({ map, anchor: marker }); });
-            markers.current.push({ marker, category: facility.category });
+            const entry = addLabeledMarker({ position: location, title: facility.name, label: facility.label, icon: facility.icon, category: facility.category });
+            entry.marker.addListener("click", () => { info.setContent(`<strong>${facility.name}</strong><br>${facility.category === "sports" ? "运动设施" : facility.category === "life" ? "生活设施" : "交通节点"}`); info.open({ map, anchor: entry.marker }); });
+            markers.current.push({ setVisible: entry.setVisible, category: facility.category });
           } catch { /* A missing POI must not block the map. */ }
         }));
         if (!cancelled) setMapStatus("地图已就绪 · 可缩放、切换底图并计算路线");
@@ -179,33 +216,53 @@ export default function CityTowerFurukawabashi() {
   }, []);
 
   useEffect(() => {
-    markers.current.forEach(({ marker, category }) => marker.setVisible(category === "all" || mapCategory === "all" || category === mapCategory));
+    markers.current.forEach(({ setVisible, category }) => setVisible(category === "all" || mapCategory === "all" || category === mapCategory));
   }, [mapCategory]);
 
   async function showRoute(target: (typeof routeTargets)[number]) {
-    const service = directionsService.current;
-    const renderer = directionsRenderer.current;
-    if (!service || !renderer) {
+    const map = mapInstance.current;
+    const google = window.google;
+    if (!map || !google?.maps) {
       setRouteStatus("地图仍在载入，请稍后再试。");
       return;
     }
-    setRouteStatus(`正在计算前往${target.name}的${formatMode(target.mode)}路线…`);
+    setRouteStatus(`正在通过${target.provider === "ekispert" ? "服务器 Ekispert" : "Google Maps"}计算前往${target.name}的${formatMode(target.mode)}路线…`);
     try {
-      const google = window.google;
-      const request: any = {
+      if (target.provider === "ekispert") {
+        const response = await fetch(`${siteBasePath()}api/transit-route?destination=${encodeURIComponent(target.id)}`, { headers: { Accept: "application/json" } });
+        const route = await response.json();
+        if (!response.ok) throw new Error(route.hint ?? "Ekispert 路线查询失败");
+        directionsRenderer.current?.setMap(null);
+        ekispertPolyline.current?.setMap(null);
+        const path = Array.isArray(route.path) ? route.path : [];
+        if (path.length > 1) {
+          ekispertPolyline.current = new google.maps.Polyline({ map, path, geodesic: true, strokeColor: "#2d7f71", strokeOpacity: 0.92, strokeWeight: 7 });
+          const bounds = new google.maps.LatLngBounds();
+          path.forEach((point: { lat: number; lng: number }) => bounds.extend(point));
+          map.fitBounds(bounds, 72);
+        }
+        const lineSummary = Array.isArray(route.steps) ? route.steps.map((step: { line?: string }) => step.line).filter(Boolean).join(" → ") : "";
+        setRouteStatus(`${target.name} · Ekispert 约 ${route.durationMinutes ?? "—"} 分钟 · ${route.transferCount ? `换乘 ${route.transferCount} 次` : "直达"}${route.fareYen ? ` · 约 ¥${route.fareYen}` : ""}${lineSummary ? ` · ${lineSummary}` : ""}。站点级结果，班次以出发时刻为准。`);
+        return;
+      }
+
+      const service = directionsService.current;
+      const renderer = directionsRenderer.current;
+      if (!service || !renderer) throw new Error("Google 路线服务尚未就绪");
+      ekispertPolyline.current?.setMap(null);
+      renderer.setMap(map);
+      const result = await service.route({
         origin: { lat: 34.741652, lng: 135.5905763 },
         destination: target.query,
         travelMode: google.maps.TravelMode[target.mode],
         region: "JP",
-      };
-      if (target.mode === "TRANSIT") request.transitOptions = { departureTime: new Date() };
-      const result = await service.route(request);
+      });
       renderer.setDirections(result);
       const leg = result.routes?.[0]?.legs?.[0];
-      setRouteStatus(`${target.name} · ${formatMode(target.mode)}约 ${leg?.duration?.text ?? "—"} · ${leg?.distance?.text ?? "距离由路线决定"}。实际时间随出发时刻变化。`);
-      mapInstance.current?.panTo(leg?.start_location);
-    } catch {
-      setRouteStatus(`暂时无法计算${target.name}路线，可点击下方外部地图继续。`);
+      setRouteStatus(`${target.name} · Google Maps ${formatMode(target.mode)}约 ${leg?.duration?.text ?? "—"} · ${leg?.distance?.text ?? "距离由路线决定"}。实际时间随路况变化。`);
+      map.panTo(leg?.start_location);
+    } catch (error) {
+      setRouteStatus(error instanceof Error ? error.message : `暂时无法计算${target.name}路线，可点击下方外部地图继续。`);
     }
   }
 
@@ -271,7 +328,7 @@ export default function CityTowerFurukawabashi() {
 
       <section className="story-section map-story" id="map">
         <div ref={mapElement} className="property-map" aria-label="City Tower古川桥周边互动地图" />
-        <div className="map-panel"><p className="story-kicker">LIVE MAP · GOOGLE MAPS</p><h2>把生活圈放到同一张地图。</h2><p>{mapStatus}</p><div className="map-filters">{([['all','全部'],['life','生活'],['sports','运动'],['transit','交通']] as const).map(([value,label])=><button key={value} onClick={()=>setMapCategory(value)} className={mapCategory===value?'active':''}>{label}</button>)}</div><div className="route-picker">{routeTargets.map(target=><button key={target.name} onClick={()=>showRoute(target)}><b>{target.name}</b><span>{target.sub}</span></button>)}</div><div className="route-status">{routeStatus}</div><a href="https://www.google.com/maps/dir/?api=1&origin=34.741652,135.5905763" target="_blank" rel="noreferrer">在 Google Maps 继续规划 ↗</a></div>
+        <div className="map-panel"><p className="story-kicker">LIVE MAP · GOOGLE MAPS</p><h2>把生活圈放到同一张地图。</h2><p>{mapStatus}</p><div className="map-filters">{([['all','全部'],['life','生活'],['sports','运动'],['transit','交通']] as const).map(([value,label])=><button key={value} onClick={()=>setMapCategory(value)} className={mapCategory===value?'active':''}>{label}</button>)}</div><div className="route-groups"><section><small>公交 / 铁路 · 服务器 Ekispert</small><div className="route-picker">{routeTargets.filter(target=>target.provider==="ekispert").map(target=><button key={target.id} onClick={()=>showRoute(target)}><b>{target.name}</b><span>{target.sub}</span></button>)}</div></section><section><small>步行 / 驾车 · Google Maps</small><div className="route-picker">{routeTargets.filter(target=>target.provider==="google").map(target=><button key={target.id} onClick={()=>showRoute(target)}><b>{target.name}</b><span>{target.sub}</span></button>)}</div></section></div><div className="route-status">{routeStatus}</div><a href="https://www.google.com/maps/dir/?api=1&origin=34.741652,135.5905763" target="_blank" rel="noreferrer">在 Google Maps 继续规划 ↗</a></div>
       </section>
 
       <section className="story-section commute-story" id="commute">
