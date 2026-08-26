@@ -1,0 +1,100 @@
+{
+  "rokko": {
+    "src": "/mountains/rokko.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mt_rokko01s2816.jpg",
+    "title": "Mt rokko01s2816.jpg",
+    "artist": "663highland",
+    "license": "CC BY 2.5"
+  },
+  "kongo-katsuragi": {
+    "src": "/mountains/kongo-katsuragi.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mount_Kongo(Kongosanchi)7.jpg",
+    "title": "Mount Kongo(Kongosanchi)7.jpg",
+    "artist": "KENPEI",
+    "license": "CC BY-SA 3.0"
+  },
+  "ikoma": {
+    "src": "/mountains/ikoma.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mt_Ikoma1600px.JPG",
+    "title": "Mt Ikoma1600px.JPG",
+    "artist": "Kansai explorer",
+    "license": "CC BY 3.0"
+  },
+  "hokusetsu": {
+    "src": "/mountains/hokusetsu.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mount_Myoken_(Nose)1.jpg",
+    "title": "Mount Myoken (Nose)1.jpg",
+    "artist": "KENPEI",
+    "license": "CC BY-SA 3.0"
+  },
+  "izumi": {
+    "src": "/mountains/izumi.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:MtIwawaki.JPG",
+    "title": "MtIwawaki.JPG",
+    "artist": "akagane",
+    "license": "CC BY-SA 3.0"
+  },
+  "kyoto": {
+    "src": "/mountains/kyoto.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hieizan_biwakogawa.JPG",
+    "title": "Hieizan biwakogawa.JPG",
+    "artist": "Rock.jazz.cafe",
+    "license": "CC BY-SA 4.0"
+  },
+  "hira": {
+    "src": "/mountains/hira.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mount_Bunagatake.jpg",
+    "title": "Mount Bunagatake.jpg",
+    "artist": "Mass Ave 975 at English Wikipedia / Mass Ave 975",
+    "license": "CC BY-SA 3.0"
+  },
+  "suzuka-ibuki": {
+    "src": "/mountains/suzuka-ibuki.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ibukiyama_from_Kannonzaka(Maibara-Nagahama).jpg",
+    "title": "Ibukiyama from Kannonzaka(Maibara-Nagahama).jpg",
+    "artist": "Newgreen",
+    "license": "CC BY-SA 4.0"
+  },
+  "omine": {
+    "src": "/mountains/omine.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hakkyo01.JPG",
+    "title": "Hakkyo01.JPG",
+    "artist": "Mass Ave 975",
+    "license": "CC BY-SA 3.0"
+  },
+  "daiko-odai": {
+    "src": "/mountains/daiko-odai.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mount_Odaigahara_-_panoramio.jpg",
+    "title": "Mount Odaigahara - panoramio.jpg",
+    "artist": "z tanuki",
+    "license": "CC BY 3.0"
+  },
+  "tajima": {
+    "src": "/mountains/tajima.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hyonosen01s1600.jpg",
+    "title": "Hyonosen01s1600.jpg",
+    "artist": "663highland",
+    "license": "CC BY 2.5"
+  },
+  "daisen": {
+    "src": "/mountains/daisen.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Daisen_(mountain)_in_2012.JPG",
+    "title": "Daisen (mountain) in 2012.JPG",
+    "artist": "Mti",
+    "license": "CC BY-SA 3.0"
+  },
+  "tsurugi": {
+    "src": "/mountains/tsurugi.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mt.Tsurugisan.jpg",
+    "title": "Mt.Tsurugisan.jpg",
+    "artist": "As6673",
+    "license": "Public domain"
+  },
+  "arashima": {
+    "src": "/mountains/arashima.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mount_Arashima_2.jpg",
+    "title": "Mount Arashima 2.jpg",
+    "artist": "Ski Mania",
+    "license": "CC0"
+  }
+}

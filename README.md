@@ -6,18 +6,25 @@
 
 ```text
 helper_sites/
+├─ docs/                  # 所有站点共通的技术与视觉规范
 ├─ sites/                 # 可运行站点；一个目录对应一个站点
 │  └─ osaka-east-home-guide/
+│  └─ osaka-mountain-picker/
 ├─ templates/             # 新站点可复用的约定与模板
 ├─ sites.json             # 站点机器可读索引
 └─ README.md
 ```
+
+## 共通规范
+
+所有新站点和显著改动都应遵循 [Helper Sites 通用技术与视觉规范](docs/helper-site-standards.md)。该文档统一规定目录、工程、安全、数据来源、可访问性、离线交付、Git 工作流和默认视觉语言。
 
 ## 现有站点
 
 | 站点 | 说明 | 技术栈 | 目录 |
 |---|---|---|---|
 | 大阪东线置业研究所 | 门真市通勤购房区域研究 | React / vinext | [sites/osaka-east-home-guide](sites/osaka-east-home-guide) |
+| 下一座山 · 大阪発 | 大阪出发的四季登山目的地与路线规划 | React / vinext / D1 | [sites/osaka-mountain-picker](sites/osaka-mountain-picker) |
 
 ## 添加新站点
 

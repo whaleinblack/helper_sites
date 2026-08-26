@@ -12,6 +12,19 @@
         "TypeScript"
       ],
       "status": "active"
+    },
+    {
+      "id": "osaka-mountain-picker",
+      "title": "下一座山 · 大阪発",
+      "description": "以大阪站为起点，结合山域、路线难度、交通、气候与天气筛选四季登山目的地",
+      "path": "sites/osaka-mountain-picker",
+      "stack": [
+        "React",
+        "vinext",
+        "TypeScript",
+        "D1"
+      ],
+      "status": "active"
     }
   ]
 }
