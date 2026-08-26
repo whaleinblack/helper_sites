@@ -54,5 +54,5 @@ npm run build:static
 `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` 注入受生产域名限制的 Google Maps 浏览器 Key。
 
 `server/weather-api.mjs` 提供同源的 `/mountain/api/weather` 服务。它只接受预定义山域 ID，
-使用服务端 `OPENWEATHER_API_KEY` 请求 OpenWeather，优先尝试 One Call 4.0，并在订阅不可用时降级到
+使用服务端 `OPENWEATHER_API_KEY` 请求 OpenWeather，优先使用 One Call 3.0 的 8 日逐日预报，并在订阅不可用时降级到
 5 日／3 小时预报。成功响应缓存 24 小时，更新失败时最多使用 7 日内的旧缓存。Key 不进入静态文件或 Git。

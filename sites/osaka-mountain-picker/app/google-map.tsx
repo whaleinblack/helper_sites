@@ -2,13 +2,16 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from 'react';
-import type { MountainArea, MountainRoute, Peak } from './mountain-data';
+import { areaMetrics, monthNames, routesForPeak, type MountainArea, type MountainRoute, type Peak } from './mountain-data';
+import { getMonthInsight } from './month-insights';
 
 declare global { interface Window { google?: any; __osakaMountainGoogleLoading?: Promise<void> } }
 
 type Props = {
   areas: MountainArea[];
   peaks: Peak[];
+  weatherByArea: Record<string, { days: WeatherDay[] } | undefined>;
+  selectedMonth: number;
   selectedAreaId: string;
   selectedPeakId: string | null;
   detailAreaId: string | null;
@@ -18,6 +21,55 @@ type Props = {
   onSelectArea: (id: string) => void;
   onSelectPeak: (id: string) => void;
 };
+
+type WeatherDay = { date:string; min:number; max:number; pop:number; rain:number; wind:number; summary:string };
+type DomOverlayRecord = { overlay:any; element:HTMLElement };
+
+const gradeMeaning:Record<string,string>={A:'极佳',B:'推荐',C:'尚可',D:'需斟酌',E:'不太适合',F:'尽可能避开'};
+
+function recommendationGrade(score:number){
+  if(score>=90)return 'A';
+  if(score>=80)return 'B';
+  if(score>=70)return 'C';
+  if(score>=55)return 'D';
+  if(score>=40)return 'E';
+  return 'F';
+}
+
+function weatherSymbol(summary:string){
+  if(/雷|thunder/i.test(summary))return '⚡';
+  if(/雪|snow/i.test(summary))return '❄';
+  if(/雨|rain|drizzle/i.test(summary))return '☂';
+  if(/雾|霧|cloud|fog|mist/i.test(summary))return '☁';
+  return '☀';
+}
+
+function routeRange(peakId:string){
+  const constants=routesForPeak(peakId).map((route)=>route.courseConstant);
+  if(!constants.length)return '待整理';
+  const min=Math.min(...constants);
+  const max=Math.max(...constants);
+  return min===max?String(min):`${min}–${max}`;
+}
+
+function createDomOverlay(map:any,position:{lat:number;lng:number},element:HTMLElement){
+  class DomOverlay extends window.google.maps.OverlayView {
+    point:any;
+    node:HTMLElement;
+    constructor(){super();this.point=new window.google.maps.LatLng(position);this.node=element}
+    onAdd(){this.getPanes()?.overlayMouseTarget.appendChild(this.node)}
+    draw(){const pixel=this.getProjection()?.fromLatLngToDivPixel(this.point);if(pixel){this.node.style.left=`${pixel.x}px`;this.node.style.top=`${pixel.y}px`}}
+    onRemove(){this.node.remove()}
+  }
+  const overlay=new DomOverlay();
+  overlay.setMap(map);
+  return overlay;
+}
+
+function clearOverlays(records:Map<string,DomOverlayRecord>){
+  records.forEach(({overlay})=>overlay.setMap(null));
+  records.clear();
+}
 
 function loadGoogleMaps() {
   if (window.google?.maps) return Promise.resolve();
@@ -33,13 +85,6 @@ function loadGoogleMaps() {
     document.head.appendChild(script);
   });
   return window.__osakaMountainGoogleLoading;
-}
-
-function mapDisplayScale() {
-  if(window.innerWidth>=3400&&window.innerHeight>=1800)return 2;
-  if(window.innerWidth>=2800&&window.innerHeight>=1500)return 1.5;
-  if(window.innerWidth>=2200&&window.innerHeight>=1200)return 1.25;
-  return 1;
 }
 
 type BaseMapType='terrain'|'roadmap'|'satellite'|'hybrid';
@@ -94,8 +139,8 @@ function mapStyles(preferences:MapPreferences){
 export default function GoogleMountainMap(props: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
-  const markerRef = useRef<Map<string, any>>(new Map());
-  const peakMarkerRef = useRef<Map<string, any>>(new Map());
+  const areaOverlayRef = useRef<Map<string, DomOverlayRecord>>(new Map());
+  const peakOverlayRef = useRef<Map<string, DomOverlayRecord>>(new Map());
   const callbacksRef = useRef({
     onHoverArea:props.onHoverArea,
     onSelectArea:props.onSelectArea,
@@ -126,8 +171,8 @@ export default function GoogleMountainMap(props: Props) {
 
   useEffect(() => {
     let cancelled = false;
-    const markers = markerRef.current;
-    const peakMarkers = peakMarkerRef.current;
+    const areaOverlays = areaOverlayRef.current;
+    const peakOverlays = peakOverlayRef.current;
     loadGoogleMaps().then(() => {
       if (cancelled || !hostRef.current || !window.google?.maps) return;
       const map = new window.google.maps.Map(hostRef.current, {
@@ -147,10 +192,8 @@ export default function GoogleMountainMap(props: Props) {
     }).catch(()=>setMapStatus('fallback'));
     return () => {
       cancelled = true;
-      markers.forEach((marker)=>marker.setMap(null));
-      markers.clear();
-      peakMarkers.forEach((marker)=>marker.setMap(null));
-      peakMarkers.clear();
+      clearOverlays(areaOverlays);
+      clearOverlays(peakOverlays);
       trafficRef.current?.setMap(null);
       transitRef.current?.setMap(null);
       bicyclingRef.current?.setMap(null);
@@ -176,73 +219,140 @@ export default function GoogleMountainMap(props: Props) {
   useEffect(()=>{
     if(mapStatus!=='ready'||!mapRef.current||!window.google?.maps)return;
     const map=mapRef.current;
-    const displayScale=mapDisplayScale();
-    const visibleIds=new Set(props.areas.map((area)=>area.id));
-    markerRef.current.forEach((marker,id)=>{
-      if(!visibleIds.has(id)){marker.setMap(null);markerRef.current.delete(id)}
-    });
-    props.areas.forEach((area)=>{
-      let marker=markerRef.current.get(area.id);
-      if(!marker){
-        marker=new window.google.maps.Marker({
-          position:{lat:area.lat,lng:area.lng},
-          title:area.name,
-          label:{text:String(props.peaks.filter((peak)=>peak.areaId===area.id).length),color:'#102113',fontSize:`${10*displayScale}px`,fontWeight:'800'},
-          icon:{path:window.google.maps.SymbolPath.CIRCLE,scale:14*displayScale,fillColor:'#b7f07d',fillOpacity:.95,strokeColor:'#f5fbf3',strokeWeight:3*displayScale},
+    const overlays=areaOverlayRef.current;
+    clearOverlays(overlays);
+    if(!preferences.showMarkers)return;
+    props.areas.filter((area)=>props.detailAreaId!==area.id).forEach((area)=>{
+      const score=area.monthScores[props.selectedMonth];
+      const grade=recommendationGrade(score);
+      const insight=getMonthInsight(area,props.selectedMonth);
+      const root=document.createElement('div');
+      root.className=`map-area-card-anchor ${props.selectedAreaId===area.id?'active ':''}${area.lng>136?'report-left':''}`;
+      root.addEventListener('mouseenter',()=>callbacksRef.current.onHoverArea(area.id));
+      root.addEventListener('mouseleave',()=>callbacksRef.current.onHoverArea(null));
+
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='map-area-weather-card';
+      button.setAttribute('aria-label',`选择${area.name}，${monthNames[props.selectedMonth]}评级${grade}${score}分`);
+      button.addEventListener('click',(event)=>{event.stopPropagation();callbacksRef.current.onSelectArea(area.id)});
+
+      const head=document.createElement('span');
+      head.className='map-area-card-head';
+      const title=document.createElement('span');
+      const name=document.createElement('strong');
+      name.textContent=area.name;
+      const elevation=document.createElement('small');
+      elevation.textContent=`最高 ${areaMetrics(area.id).highest.toLocaleString()}m`;
+      title.append(name,elevation);
+      const gradeNode=document.createElement('b');
+      gradeNode.className=`grade-${grade.toLowerCase()}`;
+      gradeNode.textContent=grade;
+      head.append(title,gradeNode);
+      button.appendChild(head);
+
+      const weatherRow=document.createElement('span');
+      weatherRow.className='map-area-card-weather';
+      const days=(props.weatherByArea[area.id]?.days??[]).slice(0,5);
+      if(days.length){
+        days.forEach((day)=>{
+          const cell=document.createElement('span');
+          const date=document.createElement('small');
+          date.textContent=day.date.slice(5).replace('-','/');
+          const icon=document.createElement('b');
+          icon.textContent=weatherSymbol(day.summary);
+          icon.title=day.summary;
+          const temp=document.createElement('em');
+          temp.textContent=`${Math.round(day.max)}°`;
+          cell.append(date,icon,temp);
+          weatherRow.appendChild(cell);
         });
-        marker.addListener('mouseover',()=>callbacksRef.current.onHoverArea(area.id));
-        marker.addListener('mouseout',()=>callbacksRef.current.onHoverArea(null));
-        marker.addListener('click',()=>callbacksRef.current.onSelectArea(area.id));
-        markerRef.current.set(area.id,marker);
+      }else{
+        const pending=document.createElement('span');
+        pending.className='map-area-weather-pending';
+        pending.textContent='天气更新中';
+        weatherRow.appendChild(pending);
       }
-      marker.setMap(preferences.showMarkers&&props.detailAreaId!==area.id?map:null);
+      button.appendChild(weatherRow);
+
+      const report=document.createElement('aside');
+      report.className='map-area-score-report';
+      const reportHead=document.createElement('header');
+      const reportName=document.createElement('strong');
+      reportName.textContent=`${area.name} · ${monthNames[props.selectedMonth]}`;
+      const reportGrade=document.createElement('b');
+      reportGrade.className=`grade-${grade.toLowerCase()}`;
+      reportGrade.textContent=`${grade}${score}`;
+      reportHead.append(reportName,reportGrade);
+      report.appendChild(reportHead);
+      const grid=document.createElement('div');
+      grid.className='map-area-score-grid';
+      insight.items.forEach((item)=>{
+        const row=document.createElement('span');
+        row.className=`tone-${item.tone}`;
+        const label=document.createElement('small');
+        label.textContent=item.label;
+        const value=document.createElement('b');
+        value.textContent=item.value;
+        row.append(label,value);
+        grid.appendChild(row);
+      });
+      const overall=document.createElement('p');
+      overall.textContent=`综合：${gradeMeaning[grade]} · ${insight.summary}`;
+      report.append(grid,overall);
+      root.append(button,report);
+
+      const overlay=createDomOverlay(map,{lat:area.lat,lng:area.lng},root);
+      overlays.set(area.id,{overlay,element:root});
     });
-  },[mapStatus,preferences.showMarkers,props.areas,props.detailAreaId,props.peaks]);
+    return()=>clearOverlays(overlays);
+  },[mapStatus,preferences.showMarkers,props.areas,props.detailAreaId,props.selectedAreaId,props.selectedMonth,props.weatherByArea]);
 
   useEffect(()=>{
     if(mapStatus!=='ready'||!mapRef.current||!window.google?.maps)return;
     const map=mapRef.current;
-    const displayScale=mapDisplayScale();
+    const overlays=peakOverlayRef.current;
+    clearOverlays(overlays);
     const detailPeaks=props.detailAreaId?props.peaks.filter((peak)=>peak.areaId===props.detailAreaId):[];
-    const visibleIds=new Set(detailPeaks.map((peak)=>peak.id));
-    peakMarkerRef.current.forEach((marker,id)=>{
-      if(!visibleIds.has(id)){marker.setMap(null);peakMarkerRef.current.delete(id)}
+    if(!preferences.showMarkers)return;
+    detailPeaks.forEach((peak,index)=>{
+      const root=document.createElement('div');
+      root.className=`map-peak-card-anchor ${index%2?'side-left ':''}${props.selectedPeakId===peak.id?'active':''}`;
+      root.addEventListener('mouseenter',()=>callbacksRef.current.onHoverArea(peak.areaId));
+      root.addEventListener('mouseleave',()=>callbacksRef.current.onHoverArea(null));
+      const point=document.createElement('i');
+      point.className='map-peak-glow-point';
+      const connector=document.createElement('i');
+      connector.className='map-peak-connector';
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='map-peak-card';
+      button.setAttribute('aria-label',`选择山峰${peak.name}，海拔${peak.elevation}米`);
+      button.addEventListener('click',(event)=>{event.stopPropagation();callbacksRef.current.onSelectPeak(peak.id)});
+      const name=document.createElement('strong');
+      name.textContent=peak.name;
+      const facts=document.createElement('span');
+      facts.textContent=`${peak.elevation.toLocaleString()}m · 定数 ${routeRange(peak.id)}`;
+      const tags=document.createElement('span');
+      tags.className='map-peak-tags';
+      const labels=(peak.lists.length?peak.lists:peak.tags).slice(0,2);
+      labels.forEach((label)=>{
+        const chip=document.createElement('small');
+        chip.textContent=label;
+        tags.appendChild(chip);
+      });
+      button.append(name,facts);
+      if(labels.length)button.appendChild(tags);
+      root.append(point,connector,button);
+      const overlay=createDomOverlay(map,{lat:peak.lat,lng:peak.lng},root);
+      overlays.set(peak.id,{overlay,element:root});
     });
-    detailPeaks.forEach((peak)=>{
-      let marker=peakMarkerRef.current.get(peak.id);
-      if(!marker){
-        marker=new window.google.maps.Marker({
-          map,
-          position:{lat:peak.lat,lng:peak.lng},
-          title:`${peak.name} · ${peak.elevation.toLocaleString()}m`,
-          icon:{path:window.google.maps.SymbolPath.CIRCLE,scale:8*displayScale,fillColor:'#b7f07d',fillOpacity:.98,strokeColor:'#f5fbf3',strokeWeight:2*displayScale},
-        });
-        marker.addListener('mouseover',()=>callbacksRef.current.onHoverArea(peak.areaId));
-        marker.addListener('mouseout',()=>callbacksRef.current.onHoverArea(null));
-        marker.addListener('click',()=>callbacksRef.current.onSelectPeak(peak.id));
-        peakMarkerRef.current.set(peak.id,marker);
-      }
-      marker.setMap(preferences.showMarkers?map:null);
-    });
-  },[mapStatus,preferences.showMarkers,props.detailAreaId,props.peaks]);
+    return()=>clearOverlays(overlays);
+  },[mapStatus,preferences.showMarkers,props.detailAreaId,props.peaks,props.selectedPeakId]);
 
-  useEffect(() => {
-    const displayScale=mapDisplayScale();
-    markerRef.current.forEach((marker,id) => {
-      const active = id === props.selectedAreaId || id === props.hoveredAreaId;
-      marker.setIcon({path:window.google.maps.SymbolPath.CIRCLE,scale:(active?18:14)*displayScale,fillColor:active?'#f1b56d':'#b7f07d',fillOpacity:.96,strokeColor:'#f5fbf3',strokeWeight:3*displayScale});
-      marker.setZIndex(active?20:1);
-    });
-  },[props.hoveredAreaId,props.selectedAreaId]);
-
-  useEffect(() => {
-    const displayScale=mapDisplayScale();
-    peakMarkerRef.current.forEach((marker,id)=>{
-      const active=id===props.selectedPeakId;
-      marker.setIcon({path:window.google.maps.SymbolPath.CIRCLE,scale:(active?12:8)*displayScale,fillColor:active?'#f1b56d':'#b7f07d',fillOpacity:.98,strokeColor:'#f5fbf3',strokeWeight:(active?3:2)*displayScale});
-      marker.setZIndex(active?30:5);
-    });
-  },[props.selectedPeakId,props.detailAreaId]);
+  useEffect(()=>{
+    areaOverlayRef.current.forEach(({element},id)=>element.classList.toggle('hovered',id===props.hoveredAreaId));
+  },[props.hoveredAreaId]);
 
   useEffect(() => {
     const map=mapRef.current;

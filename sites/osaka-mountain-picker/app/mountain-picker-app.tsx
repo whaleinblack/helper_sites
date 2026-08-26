@@ -25,6 +25,7 @@ function peakRangeLabel(peakId:string) { const constants=routesForPeak(peakId).m
 type RecommendationGrade='A'|'B'|'C'|'D'|'E'|'F';
 function recommendationGrade(score:number):RecommendationGrade { if(score>=90)return'A';if(score>=80)return'B';if(score>=70)return'C';if(score>=55)return'D';if(score>=40)return'E';return'F'; }
 function courseTone(value:number|null) { if(value===null||value<30)return'course-low';if(value<50)return'course-medium';if(value<70)return'course-high';return'course-extreme'; }
+const gradeMeaning={A:'极佳',B:'推荐',C:'尚可',D:'需斟酌',E:'不太适合',F:'尽可能避开'} as const;
 function MonthInsightPopover({area,month}:{area:MountainArea;month:number}){
   const triggerRef=useRef<HTMLSpanElement>(null);
   const [position,setPosition]=useState<{left:number;top:number;scale:number}|null>(null);
@@ -65,6 +66,7 @@ function MonthInsightPopover({area,month}:{area:MountainArea;month:number}){
   const popover=position?<span className="month-insight month-insight-floating" role="tooltip" style={{left:position.left,top:position.top,'--popover-scale':position.scale} as CSSProperties}>
     <span className="month-insight-head"><span><b>{area.name} · {monthNames[month]}</b></span><strong className={`grade-${grade.toLowerCase()}`}>{grade}<small>{score}</small></strong></span>
     <span className="month-insight-grid">{insight.items.map((item)=><span className={`insight-row tone-${item.tone}`} title={item.detail} key={item.label}><small>{item.label}</small><b>{item.value}</b></span>)}</span>
+    <span className="month-insight-summary month-insight-overall">综合：{gradeMeaning[grade]} · {insight.summary}</span>
   </span>:null;
   return <><span ref={triggerRef} className="month-insight-trigger" aria-hidden="true"/>{popover&&createPortal(popover,document.body)}</>;
 }
@@ -171,7 +173,7 @@ export default function MountainPickerApp({
   })();
 
   return <main className="app-shell">
-    <GoogleMountainMap areas={filteredAreas} peaks={peaks} selectedAreaId={selectedAreaId} selectedPeakId={selectedPeakId} detailAreaId={phase>=2?selectedAreaId:expandedAreaId} hoveredAreaId={hoveredAreaId} selectedRoute={phase>=2?selectedRoute:null} onHoverArea={setHoveredAreaId} onSelectArea={focusAreaFromMap} onSelectPeak={choosePeak} />
+    <GoogleMountainMap areas={filteredAreas} peaks={peaks} weatherByArea={weatherByArea} selectedMonth={selectedMonth} selectedAreaId={selectedAreaId} selectedPeakId={selectedPeakId} detailAreaId={phase>=2?selectedAreaId:expandedAreaId} hoveredAreaId={hoveredAreaId} selectedRoute={phase>=2?selectedRoute:null} onHoverArea={setHoveredAreaId} onSelectArea={focusAreaFromMap} onSelectPeak={choosePeak} />
 
     <aside className="planner">
       <header className="app-header">

@@ -23,6 +23,7 @@ const AREAS = Object.freeze({
 const TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_STALE_MS = 7 * TTL_MS;
 const ONE_CALL_RETRY_MS = 6 * 60 * 60 * 1000;
+const CACHE_SCHEMA_VERSION = 2;
 const RATE_WINDOW_MS = 60 * 1000;
 const RATE_MAX = 120;
 const REQUEST_TIMEOUT_MS = 12 * 1000;
@@ -194,6 +195,7 @@ async function refreshRange(rangeId, area) {
         fetchedAt: now,
         expiresAt: now + TTL_MS,
         sourceVersion,
+        cacheSchemaVersion: CACHE_SCHEMA_VERSION,
       };
       cache.set(rangeId, entry);
       await persistCache();
@@ -216,13 +218,13 @@ async function fetchWeather(area) {
 
   if (Date.now() >= oneCallDisabledUntil) {
     const oneCall = await fetch(
-      `https://api.openweathermap.org/data/4.0/onecall?${params}`,
+      `https://api.openweathermap.org/data/3.0/onecall?${params}&exclude=current,minutely,hourly,alerts`,
       { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) },
     );
     if (oneCall.ok) {
       return {
         days: normalizeForecast(await oneCall.json()),
-        sourceVersion: 'openweather-one-call-4.0-normalized-v1',
+        sourceVersion: 'openweather-one-call-3.0-normalized-v1',
       };
     }
     if ([401, 403, 404].includes(oneCall.status)) {
@@ -252,7 +254,8 @@ async function loadCache() {
         typeof entry === 'object' &&
         Array.isArray(entry.days) &&
         typeof entry.fetchedAt === 'number' &&
-        typeof entry.expiresAt === 'number'
+        typeof entry.expiresAt === 'number' &&
+        entry.cacheSchemaVersion === CACHE_SCHEMA_VERSION
       ) {
         cache.set(rangeId, entry);
       }
