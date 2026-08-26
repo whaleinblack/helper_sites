@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { createPortal } from 'react-dom';
 import GoogleMountainMap from './google-map';
-import { areaMetrics, bodyGrade, monthNames, mountainAreas, peaks, peaksForArea, routes, routesForArea, routesForPeak, type MountainArea } from './mountain-data';
+import { areaMetrics, bodyGrade, isJapanHundredPeak, monthNames, mountainAreas, peaks, peaksForArea, routes, routesForArea, routesForPeak, type MountainArea } from './mountain-data';
 import mountainImages from './mountain-images.json';
 import { matchesMountainSearch } from './mountain-search';
 import { getMonthInsight } from './month-insights';
@@ -24,18 +25,48 @@ function peakRangeLabel(peakId:string) { const constants=routesForPeak(peakId).m
 type RecommendationGrade='A'|'B'|'C'|'D'|'E'|'F';
 function recommendationGrade(score:number):RecommendationGrade { if(score>=90)return'A';if(score>=80)return'B';if(score>=70)return'C';if(score>=55)return'D';if(score>=40)return'E';return'F'; }
 function courseTone(value:number|null) { if(value===null||value<30)return'course-low';if(value<50)return'course-medium';if(value<70)return'course-high';return'course-extreme'; }
-const gradeMeaning={A:'极佳',B:'推荐',C:'尚可',D:'需斟酌',E:'不太适合',F:'尽可能避开'} as const;
-
 function MonthInsightPopover({area,month}:{area:MountainArea;month:number}){
+  const triggerRef=useRef<HTMLSpanElement>(null);
+  const [position,setPosition]=useState<{left:number;top:number;scale:number}|null>(null);
   const score=area.monthScores[month];
   const grade=recommendationGrade(score);
   const insight=getMonthInsight(area,month);
-  return <span className="month-insight" role="tooltip">
-    <span className="month-insight-head"><span><small>{monthNames[month]} · MOUNTAIN CLIMATE</small><b>{area.name}</b></span><strong className={`grade-${grade.toLowerCase()}`}>{grade}<small>{score}</small></strong></span>
-    <span className="month-insight-summary">{gradeMeaning[grade]} · {insight.summary}</span>
-    <span className="month-insight-grid">{insight.items.map((item)=><span className={`insight-row tone-${item.tone}`} key={item.label}><small>{item.label}</small><b>{item.value}</b><em>{item.detail}</em></span>)}</span>
-    <span className="month-insight-note">静态气候档案与代表点海拔推算，不替代当日山岳预报。雪季难度另计。</span>
-  </span>;
+  useEffect(()=>{
+    const anchor=triggerRef.current?.parentElement;
+    if(!anchor)return;
+    const scaleForViewport=()=>window.innerWidth>=3400&&window.innerHeight>=1800?2:window.innerWidth>=2800&&window.innerHeight>=1500?1.5:window.innerWidth>=2200&&window.innerHeight>=1200?1.25:1;
+    const place=(clientX:number,clientY:number)=>{
+      const scale=scaleForViewport();
+      const width=320*scale;
+      const height=250*scale;
+      const gap=18;
+      const left=clientX+gap+width<=window.innerWidth-12?clientX+gap:Math.max(12,clientX-width-gap);
+      const top=Math.max(12,Math.min(clientY-22,window.innerHeight-height-12));
+      setPosition({left,top,scale});
+    };
+    const enter=(event:Event)=>{const pointer=event as MouseEvent;place(pointer.clientX,pointer.clientY)};
+    const move=(event:Event)=>{const pointer=event as MouseEvent;place(pointer.clientX,pointer.clientY)};
+    const leave=()=>setPosition(null);
+    const focus=()=>{const rect=anchor.getBoundingClientRect();place(rect.right,rect.top+rect.height/2)};
+    const blur=(event:Event)=>{if(!anchor.contains((event as FocusEvent).relatedTarget as Node|null))setPosition(null)};
+    anchor.addEventListener('mouseenter',enter);
+    anchor.addEventListener('mousemove',move);
+    anchor.addEventListener('mouseleave',leave);
+    anchor.addEventListener('focusin',focus);
+    anchor.addEventListener('focusout',blur);
+    return()=>{
+      anchor.removeEventListener('mouseenter',enter);
+      anchor.removeEventListener('mousemove',move);
+      anchor.removeEventListener('mouseleave',leave);
+      anchor.removeEventListener('focusin',focus);
+      anchor.removeEventListener('focusout',blur);
+    };
+  },[]);
+  const popover=position?<span className="month-insight month-insight-floating" role="tooltip" style={{left:position.left,top:position.top,'--popover-scale':position.scale} as CSSProperties}>
+    <span className="month-insight-head"><span><b>{area.name} · {monthNames[month]}</b></span><strong className={`grade-${grade.toLowerCase()}`}>{grade}<small>{score}</small></strong></span>
+    <span className="month-insight-grid">{insight.items.map((item)=><span className={`insight-row tone-${item.tone}`} title={item.detail} key={item.label}><small>{item.label}</small><b>{item.value}</b></span>)}</span>
+  </span>:null;
+  return <><span ref={triggerRef} className="month-insight-trigger" aria-hidden="true"/>{popover&&createPortal(popover,document.body)}</>;
 }
 
 function WeatherGlyph({summary}:{summary:string}){
@@ -89,7 +120,7 @@ export default function MountainPickerApp({
       const areaPeaks=peaksForArea(area.id);
       if (needle&&!matchesMountainSearch(area,areaPeaks,needle)) return false;
       if (area.driveMinutes>maxDrive) return false;
-      if (famousOnly&&!areaPeaks.some((peak)=>peak.lists.some((list)=>list.includes('百名山')))) return false;
+      if (famousOnly&&!areaPeaks.some(isJapanHundredPeak)) return false;
       if (dayTripOnly&&!area.tags.includes('日归')&&!areaPeaks.some((peak)=>peak.tags.includes('日归'))) return false;
       return true;
     });
@@ -140,7 +171,7 @@ export default function MountainPickerApp({
   })();
 
   return <main className="app-shell">
-    <GoogleMountainMap areas={filteredAreas} peaks={peaks} selectedAreaId={selectedAreaId} hoveredAreaId={hoveredAreaId} selectedRoute={phase>=2?selectedRoute:null} onHoverArea={setHoveredAreaId} onSelectArea={focusAreaFromMap} />
+    <GoogleMountainMap areas={filteredAreas} peaks={peaks} selectedAreaId={selectedAreaId} selectedPeakId={selectedPeakId} detailAreaId={phase>=2?selectedAreaId:expandedAreaId} hoveredAreaId={hoveredAreaId} selectedRoute={phase>=2?selectedRoute:null} onHoverArea={setHoveredAreaId} onSelectArea={focusAreaFromMap} onSelectPeak={choosePeak} />
 
     <aside className="planner">
       <header className="app-header">
@@ -171,8 +202,8 @@ export default function MountainPickerApp({
                 <span className="area-course"><b className={courseTone(m.maxCourse)}>{rangeLabel(area.id)}</b><small>コース定数</small></span><span className="area-score month-insight-anchor"><b className={`grade-${grade.toLowerCase()}`}>{grade}</b><small>{monthNames[selectedMonth]}推荐</small><MonthInsightPopover area={area} month={selectedMonth}/></span>
               </button>
               <div className="area-card-footer"><span>{formatMinutes(area.driveMinutes)} 驾车</span><span>{formatMinutes(area.transitMinutes)} 公交</span><span>{m.famousCount} 名山</span><button type="button" aria-expanded={expanded} onClick={()=>chooseArea(area.id)}>{expanded?'收起':'展开山峰'}⌄</button></div>
-              <div className="area-weather" aria-label={`${area.name}精简天气预报`}><span className="area-weather-label">{cardLoading?'天气更新中':cardWeather?.stale?'旧缓存':'山地代表点'} · {area.weatherElevation}m</span>{(cardWeather?.days??[]).slice(0,3).map((day)=><span className="area-weather-day" key={day.date}><small>{day.date.slice(5).replace('-','/')}</small><b><WeatherGlyph summary={day.summary}/>{Math.round(day.max)}°</b><em>雨 {Math.round(day.pop)}%</em></span>)}{!cardLoading&&!cardWeather?.days.length&&<span className="area-weather-empty">{cardWeather?.message??'预报待配置'}</span>}</div>
-              <div className={`peak-sublist ${expanded?'expanded':''}`} aria-hidden={!expanded}><div className="area-year-rating"><span>12 MONTHS · 悬浮查看原因</span><div>{area.monthScores.map((score,month)=>{const monthGrade=recommendationGrade(score);return <span key={monthNames[month]} tabIndex={expanded?0:-1} className={`month-bar month-insight-anchor ${selectedMonth===month?'current ':''}grade-${monthGrade.toLowerCase()}`} aria-label={`${monthNames[month]}：${monthGrade}，${score}分`}><i style={{height:`${Math.max(8,score)}%`}}/><small>{month+1}</small><MonthInsightPopover area={area} month={month}/></span>})}</div></div>{peaksForArea(area.id).map((peak)=><button type="button" key={peak.id} tabIndex={expanded?0:-1} onClick={()=>choosePeak(peak.id)}><span><b>{peak.name}</b><small>{peak.lists.join(' · ')||peak.tags.slice(0,2).join(' · ')}</small></span><strong>{peak.elevation.toLocaleString()}m</strong><strong className={`peak-course ${courseTone(routesForPeak(peak.id)[0]?.courseConstant??null)}`}>定数 {peakRangeLabel(peak.id)}</strong><em>→</em></button>)}<a className="photo-credit" href={photo.sourceUrl} target="_blank" rel="noreferrer">照片：{photo.artist} · {photo.title} · {photo.license} · Wikimedia Commons ↗</a></div>
+              <div className="area-weather" aria-label={`${area.name}天气预报`} title={`天气为海拔约 ${area.weatherElevation}m 的山地代表点预测数据`}><span className="area-weather-label">{cardLoading?'天气更新中':cardWeather?.stale?'旧缓存':'未来预报'} · {area.weatherElevation}m</span>{(cardWeather?.days??[]).map((day)=><span className="area-weather-day" key={day.date}><small>{day.date.slice(5).replace('-','/')}</small><b><WeatherGlyph summary={day.summary}/>{Math.round(day.max)}°</b><em>雨 {Math.round(day.pop)}%</em></span>)}{!cardLoading&&!cardWeather?.days.length&&<span className="area-weather-empty">{cardWeather?.message??'预报待配置'}</span>}</div>
+              <div className={`peak-sublist ${expanded?'expanded':''}`} aria-hidden={!expanded}><div className="area-year-rating"><span>12 MONTHS · 悬浮查看原因</span><div>{area.monthScores.map((score,month)=>{const monthGrade=recommendationGrade(score);return <span key={monthNames[month]} tabIndex={expanded?0:-1} className={`month-bar month-insight-anchor ${selectedMonth===month?'current ':''}grade-${monthGrade.toLowerCase()}`} aria-label={`${monthNames[month]}：${monthGrade}，${score}分`}><span className="month-bar-track"><i style={{height:`${score}%`}}/></span><small>{month+1}</small><MonthInsightPopover area={area} month={month}/></span>})}</div></div>{peaksForArea(area.id).map((peak)=><button type="button" key={peak.id} tabIndex={expanded?0:-1} onClick={()=>choosePeak(peak.id)}><span><b>{peak.name}</b><small>{peak.lists.join(' · ')||peak.tags.slice(0,2).join(' · ')}</small></span><strong>{peak.elevation.toLocaleString()}m</strong><strong className={`peak-course ${courseTone(routesForPeak(peak.id)[0]?.courseConstant??null)}`}>定数 {peakRangeLabel(peak.id)}</strong><em>→</em></button>)}<a className="photo-credit" href={photo.sourceUrl} title={`${photo.title} · ${photo.artist} · ${photo.license} · Wikimedia Commons`} target="_blank" rel="noreferrer">图片鸣谢：{photo.artist} · {photo.license} ↗</a></div>
             </article>})}
             {!filteredAreas.length&&<div className="empty-state"><b>没有符合条件的山域</b><p>放宽驾车时间或清除标签后再试。</p></div>}
           </div>
@@ -182,7 +213,7 @@ export default function MountainPickerApp({
           <button type="button" className="back-link" onClick={()=>goPhase(1)}>← 返回山域列表</button>
           <div className="route-hero"><div><span>{selectedArea.kind} · {selectedArea.prefectures.join(' / ')}</span><h1>{selectedPeak?.name??selectedArea.name}</h1><p>{selectedPeak?`${selectedPeak.elevation.toLocaleString()}m · ${selectedPeak.lists.join(' · ')||selectedPeak.tags.join(' · ')}`:selectedArea.overview}</p></div><div className="hero-number"><b>{selectedPeak?.elevation.toLocaleString()??metrics.highest.toLocaleString()}</b><span>METERS</span></div></div>
           {selectedPeak&&<div className="peak-resource-links"><span>山峰资料与更多典型／纵走路线</span><a target="_blank" rel="noreferrer" href={`https://yamap.com/mountains?q=${encodeURIComponent(selectedPeak.name)}`}>YAMAP 山峰 ↗</a><a target="_blank" rel="noreferrer" href={`https://yamahack.com/search/${encodeURIComponent(selectedPeak.name)}`}>YamaHack ↗</a></div>}
-          <div className="weather-strip"><div><span>{weatherLoading?'天气更新中':weather?.status==='stale'?'天气缓存过期':'未来天气'}</span><b>{selectedArea.name} · 代表点 {selectedArea.weatherElevation}m</b></div>{(weather?.days??[]).slice(0,5).map((day)=><span key={day.date}><small>{day.date.slice(5)}</small><b><WeatherGlyph summary={day.summary}/></b><em>{Math.round(day.max)}°</em></span>)}{!weatherLoading&&!weather?.days.length&&<p>{weather?.message??'配置天气密钥后显示预报'}</p>}<button type="button" onClick={()=>goPhase(3)}>{weather?.availableDays??14}日 →</button></div>
+          <div className="weather-strip" title={`天气为海拔约 ${selectedArea.weatherElevation}m 的山地代表点预测数据`}><div><span>{weatherLoading?'天气更新中':weather?.status==='stale'?'天气缓存过期':'未来天气'}</span><b>{selectedArea.name} · {selectedArea.weatherElevation}m</b></div>{(weather?.days??[]).map((day)=><span key={day.date}><small>{day.date.slice(5)}</small><b><WeatherGlyph summary={day.summary}/></b><em>{Math.round(day.max)}°</em></span>)}{!weatherLoading&&!weather?.days.length&&<p>{weather?.message??'配置天气密钥后显示预报'}</p>}<button type="button" onClick={()=>goPhase(3)}>{weather?.availableDays??0}日 →</button></div>
           <div className="route-layout">
             <div className="route-list"><div className="subheading"><span>代表路线</span><small>{subjectRoutes.length} ROUTES</small></div>{subjectRoutes.map((route)=><button type="button" key={route.id} className={selectedRoute?.id===route.id?'active':''} onClick={()=>setSelectedRouteId(route.id)}><span><small>{route.routeClass} · {route.shape} · {route.trailhead}</small><b>{route.name}</b><em>{route.riskFlags.join(' · ')}</em></span><strong><b className={courseTone(route.courseConstant)}>{route.courseConstant}</b><small>定数</small></strong></button>)}{!subjectRoutes.length&&<div className="empty-state"><b>路线资料整理中</b><p>该山峰目前提供索引信息与外部核验入口。</p></div>}</div>
             {selectedRoute&&<article className="route-detail"><div className="route-metrics"><div><b>{selectedRoute.distanceKm}</b><span>KM</span></div><div><b>{selectedRoute.timeHours}</b><span>HOURS</span></div><div><b>+{selectedRoute.ascentM}</b><span>ASCENT</span></div><div><b className={courseTone(selectedRoute.courseConstant)}>{selectedRoute.courseConstant}</b><span>定数 · 体力度 {bodyGrade(selectedRoute.courseConstant)}</span></div></div>
@@ -198,8 +229,8 @@ export default function MountainPickerApp({
         {phase===3&&<div className={`phase-view ${phaseDirection}`}>
           <button type="button" className="back-link" onClick={()=>goPhase(2)}>← 返回路线概览</button>
           <div className="section-kicker">PHASE 03 · CONDITIONS</div><h1 className="conditions-title">先看天气，<br/>再决定出发。</h1>
-          <section className="condition-card forecast-card"><div className="condition-head"><div><span>{weather?.availableDays??14} DAY FORECAST</span><h2>{selectedArea.name}</h2><p>代表点约 {selectedArea.weatherElevation}m · {weather?.updatedAt?`更新 ${new Date(weather.updatedAt).toLocaleString('zh-CN')}`:'尚无在线缓存'}</p></div><b className={`status-dot ${weather?.status}`}>{weather?.status??'LOADING'}</b></div><div className="forecast-grid">{(weather?.days??[]).slice(0,14).map((day)=><article key={day.date}><span>{day.date.slice(5).replace('-','/')}</span><b><WeatherGlyph summary={day.summary}/></b><strong>{Math.round(day.max)}°</strong><small>{Math.round(day.min)}° · 雨 {Math.round(day.pop)}%</small></article>)}{!weatherLoading&&!weather?.days.length&&<div className="weather-empty"><b>等待 OpenWeather 配置</b><p>{weather?.message??'月度气候与路线信息仍可正常使用。'}</p></div>}</div><p className="mountain-warning">山地微气候变化快；这里的代表点预报不替代山岳气象、雷达和现场封路信息。</p></section>
-          <section className="condition-card climate-card"><div className="condition-head"><div><span>1991–2020 CLIMATE</span><h2>十二个月适宜度</h2><p>{selectedArea.climateNote}</p></div><b className={`grade-${recommendationGrade(selectedArea.monthScores[selectedMonth]).toLowerCase()}`}>{recommendationGrade(selectedArea.monthScores[selectedMonth])}</b></div><div className="month-chart">{selectedArea.monthScores.map((score,index)=><div key={monthNames[index]} tabIndex={0} className="month-insight-anchor" aria-label={`${monthNames[index]}：${recommendationGrade(score)}，${score}分`}><i style={{height:`${score}%`}} className={`${index===selectedMonth?'current ':''}grade-${recommendationGrade(score).toLowerCase()}`}/><span>{index+1}</span><MonthInsightPopover area={selectedArea} month={index}/></div>)}</div></section>
+          <section className="condition-card forecast-card" title={`天气为海拔约 ${selectedArea.weatherElevation}m 的山地代表点预测数据`}><div className="condition-head"><div><span>{weather?.availableDays??0} DAY FORECAST</span><h2>{selectedArea.name}</h2><p>约 {selectedArea.weatherElevation}m · {weather?.updatedAt?`更新 ${new Date(weather.updatedAt).toLocaleString('zh-CN')}`:'尚无在线缓存'}</p></div><b className={`status-dot ${weather?.status}`}>{weather?.status??'LOADING'}</b></div><div className="forecast-grid">{(weather?.days??[]).map((day)=><article key={day.date}><span>{day.date.slice(5).replace('-','/')}</span><b><WeatherGlyph summary={day.summary}/></b><strong>{Math.round(day.max)}°</strong><small>{Math.round(day.min)}° · 雨 {Math.round(day.pop)}%</small></article>)}{!weatherLoading&&!weather?.days.length&&<div className="weather-empty"><b>等待 OpenWeather 配置</b><p>{weather?.message??'月度气候与路线信息仍可正常使用。'}</p></div>}</div><p className="mountain-warning">山地微气候变化快；出发前请同时核验山岳气象、雷达和现场封路信息。</p></section>
+          <section className="condition-card climate-card"><div className="condition-head"><div><span>1991–2020 CLIMATE</span><h2>十二个月适宜度</h2><p>{selectedArea.climateNote}</p></div><b className={`grade-${recommendationGrade(selectedArea.monthScores[selectedMonth]).toLowerCase()}`}>{recommendationGrade(selectedArea.monthScores[selectedMonth])}</b></div><div className="month-chart">{selectedArea.monthScores.map((score,index)=><div key={monthNames[index]} tabIndex={0} className="month-insight-anchor" aria-label={`${monthNames[index]}：${recommendationGrade(score)}，${score}分`}><span className="month-chart-track"><i style={{height:`${score}%`}} className={`${index===selectedMonth?'current ':''}grade-${recommendationGrade(score).toLowerCase()}`}/></span><span>{index+1}</span><MonthInsightPopover area={selectedArea} month={index}/></div>)}</div></section>
           {selectedRoute&&<section className="condition-card access-card"><div className="condition-head"><div><span>ACCESS FROM OSAKA</span><h2>{selectedRoute.trailhead}</h2><p>大阪站为统一基准，保存的是规划摘要，不是实时路况。</p></div><b>{formatMinutes(selectedArea.driveMinutes)}</b></div><div className="access-grid"><article><span>驾车</span><b>{formatMinutes(selectedArea.driveMinutes)}</b><p>{selectedRoute.parkingNote}</p></article><article><span>公共交通</span><b>{formatMinutes(selectedArea.transitMinutes)}</b><p>{selectedRoute.lastBusNote}</p></article></div><div className="external-actions"><a target="_blank" rel="noreferrer" href={`https://www.google.com/maps/dir/?api=1&origin=Osaka+Station&destination=${encodeURIComponent(googleDestination)}`}>Google Maps 实时导航 ↗</a><a target="_blank" rel="noreferrer" href="https://roote.ekispert.net/">駅すぱあと实时查询 ↗</a></div></section>}
           <button type="button" className="primary-action wide" disabled={!selectedRoute} onClick={()=>goPhase(4)}>生成行程判断 <span>→</span></button>
         </div>}
@@ -208,7 +239,7 @@ export default function MountainPickerApp({
           <button type="button" className="back-link" onClick={()=>goPhase(3)}>← 返回天气与交通</button>
           <div className="section-kicker">PHASE 04 · DECIDE</div><h1 className="conditions-title">下一座山，<br/>就定在这里。</h1>
           <section className={`decision-card ${decision.tone}`}><span>TRIP SIGNAL</span><h2>{decision.label}</h2><p>{decision.text}</p><div className="decision-route"><small>{selectedArea.name}</small><b>{selectedRoute?.name??'未选择路线'}</b><span>{selectedRoute?`${selectedRoute.distanceKm}km · ${selectedRoute.timeHours}h · 定数 ${selectedRoute.courseConstant}`:''}</span></div></section>
-          <div className="decision-grid"><article><span>01 · 路线</span><b>体力度 {selectedRoute?.bodyGrade??'—'}</b><p>{selectedRoute?.riskFlags.join(' · ')??'路线未定'}</p></article><article><span>02 · 交通</span><b>{formatMinutes(selectedArea.driveMinutes)}</b><p>大阪站至代表登山口，非实时。</p></article><article><span>03 · 季节</span><b className={`grade-${recommendationGrade(selectedArea.monthScores[selectedMonth]).toLowerCase()}`}>{recommendationGrade(selectedArea.monthScores[selectedMonth])} · {selectedArea.monthScores[selectedMonth]}</b><p>{monthNames[selectedMonth]}静态适宜度。</p></article><article><span>04 · 天气</span><b>{weather?.days[0]?`${Math.round(weather.days[0].max)}° / 雨${Math.round(weather.days[0].pop)}%`:'待更新'}</b><p>代表点天气，出发前再次确认。</p></article></div>
+          <div className="decision-grid"><article><span>01 · 路线</span><b>体力度 {selectedRoute?.bodyGrade??'—'}</b><p>{selectedRoute?.riskFlags.join(' · ')??'路线未定'}</p></article><article><span>02 · 交通</span><b>{formatMinutes(selectedArea.driveMinutes)}</b><p>大阪站至代表登山口，非实时。</p></article><article><span>03 · 季节</span><b className={`grade-${recommendationGrade(selectedArea.monthScores[selectedMonth]).toLowerCase()}`}>{recommendationGrade(selectedArea.monthScores[selectedMonth])} · {selectedArea.monthScores[selectedMonth]}</b><p>{monthNames[selectedMonth]}静态适宜度。</p></article><article title={`天气为海拔约 ${selectedArea.weatherElevation}m 的山地代表点预测数据`}><span>04 · 天气</span><b>{weather?.days[0]?`${Math.round(weather.days[0].max)}° / 雨${Math.round(weather.days[0].pop)}%`:'待更新'}</b><p>出发前再次确认实时变化。</p></article></div>
           <section className="checklist"><span>出发前 CHECK</span>{['重新确认登山道封闭与积雪','核对末班车或停车场开放','向家人共享行程并提交登山届','下载正式离线登山地图'].map((item)=><label key={item}><input type="checkbox"/>{item}</label>)}</section>
           <div className="external-actions stacked"><a target="_blank" rel="noreferrer" href={`https://www.google.com/maps/dir/?api=1&origin=Osaka+Station&destination=${encodeURIComponent(googleDestination)}`}>打开 Google Maps ↗</a><a target="_blank" rel="noreferrer" href={`https://yamap.com/mountains?q=${encodeURIComponent(selectedPeak?.name??selectedArea.name)}`}>在 YAMAP 核验 ↗</a><a target="_blank" rel="noreferrer" href={`https://yamahack.com/search/${encodeURIComponent(selectedPeak?.name??selectedArea.name)}`}>在 YamaHack 查路线 ↗</a><a target="_blank" rel="noreferrer" href={`https://www.yamareco.com/modules/yamareco/search_record.php?key=${encodeURIComponent(selectedPeak?.name??selectedArea.name)}`}>在ヤマレコ核验 ↗</a></div>
         </div>}

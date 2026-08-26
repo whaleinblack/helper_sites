@@ -4,6 +4,7 @@ import {
   areaMetrics,
   bodyGrade,
   calculateCourseConstant,
+  isJapanHundredPeak,
   mountainAreas,
   peaks,
   routes,
@@ -51,6 +52,14 @@ test('multilingual search matches simplified Chinese, pinyin, kana, and romaji',
   assert.equal(matchesMountainSearch(rokko,areaPeaks,'liu jia shan'),true);
   assert.equal(matchesMountainSearch(rokko,areaPeaks,'ろっこう'),true);
   assert.equal(matchesMountainSearch(rokko,areaPeaks,'rokkou'),true);
+});
+
+test('Japan 100 Famous Mountains filter excludes regional, 200, and 300 lists', () => {
+  const matchingPeaks=peaks.filter(isJapanHundredPeak);
+  assert.ok(matchingPeaks.length > 0);
+  assert.ok(matchingPeaks.every((peak)=>peak.lists.includes('日本百名山')));
+  assert.equal(isJapanHundredPeak(peaks.find((peak)=>peak.id==='rokko-saikoho')!),false);
+  assert.equal(isJapanHundredPeak(peaks.find((peak)=>peak.id==='ibuki')!),true);
 });
 
 test('course constant uses the official components and ceiling', () => {

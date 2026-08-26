@@ -10,10 +10,13 @@ type Props = {
   areas: MountainArea[];
   peaks: Peak[];
   selectedAreaId: string;
+  selectedPeakId: string | null;
+  detailAreaId: string | null;
   hoveredAreaId: string | null;
   selectedRoute: MountainRoute | null;
   onHoverArea: (id: string | null) => void;
   onSelectArea: (id: string) => void;
+  onSelectPeak: (id: string) => void;
 };
 
 function loadGoogleMaps() {
@@ -32,17 +35,39 @@ function loadGoogleMaps() {
   return window.__osakaMountainGoogleLoading;
 }
 
+function mapDisplayScale() {
+  if(window.innerWidth>=3400&&window.innerHeight>=1800)return 2;
+  if(window.innerWidth>=2800&&window.innerHeight>=1500)return 1.5;
+  if(window.innerWidth>=2200&&window.innerHeight>=1200)return 1.25;
+  return 1;
+}
+
 export default function GoogleMountainMap(props: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markerRef = useRef<Map<string, any>>(new Map());
+  const peakMarkerRef = useRef<Map<string, any>>(new Map());
+  const callbacksRef = useRef({
+    onHoverArea:props.onHoverArea,
+    onSelectArea:props.onSelectArea,
+    onSelectPeak:props.onSelectPeak,
+  });
   const routeRef = useRef<any>(null);
   const [terrainOn, setTerrainOn] = useState(true);
   const [mapStatus, setMapStatus] = useState<'loading'|'ready'|'fallback'>('loading');
 
+  useEffect(()=>{
+    callbacksRef.current={
+      onHoverArea:props.onHoverArea,
+      onSelectArea:props.onSelectArea,
+      onSelectPeak:props.onSelectPeak,
+    };
+  },[props.onHoverArea,props.onSelectArea,props.onSelectPeak]);
+
   useEffect(() => {
     let cancelled = false;
     const markers = markerRef.current;
+    const peakMarkers = peakMarkerRef.current;
     loadGoogleMaps().then(() => {
       if (cancelled || !hostRef.current || !window.google?.maps) return;
       const map = new window.google.maps.Map(hostRef.current, {
@@ -57,42 +82,116 @@ export default function GoogleMountainMap(props: Props) {
       });
       map.__gsiLayer = gsi;
       map.overlayMapTypes.push(gsi);
-      props.areas.forEach((area) => {
-        const marker = new window.google.maps.Marker({
-          map, position:{lat:area.lat,lng:area.lng}, title:area.name,
-          label:{text:String(props.peaks.filter((peak)=>peak.areaId===area.id).length),color:'#102113',fontSize:'10px',fontWeight:'800'},
-          icon:{path:window.google.maps.SymbolPath.CIRCLE,scale:14,fillColor:'#b7f07d',fillOpacity:.95,strokeColor:'#f5fbf3',strokeWeight:3},
-        });
-        marker.addListener('mouseover',()=>props.onHoverArea(area.id));
-        marker.addListener('mouseout',()=>props.onHoverArea(null));
-        marker.addListener('click',()=>props.onSelectArea(area.id));
-        markers.set(area.id,marker);
-      });
       setMapStatus('ready');
     }).catch(()=>setMapStatus('fallback'));
-    return () => { cancelled = true; markers.forEach((marker)=>marker.setMap(null)); markers.clear(); };
-  // Initial marker creation is intentionally stable; current callbacks are state setters.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      cancelled = true;
+      markers.forEach((marker)=>marker.setMap(null));
+      markers.clear();
+      peakMarkers.forEach((marker)=>marker.setMap(null));
+      peakMarkers.clear();
+    };
   }, []);
 
+  useEffect(()=>{
+    if(mapStatus!=='ready'||!mapRef.current||!window.google?.maps)return;
+    const map=mapRef.current;
+    const displayScale=mapDisplayScale();
+    const visibleIds=new Set(props.areas.map((area)=>area.id));
+    markerRef.current.forEach((marker,id)=>{
+      if(!visibleIds.has(id)){marker.setMap(null);markerRef.current.delete(id)}
+    });
+    props.areas.forEach((area)=>{
+      let marker=markerRef.current.get(area.id);
+      if(!marker){
+        marker=new window.google.maps.Marker({
+          position:{lat:area.lat,lng:area.lng},
+          title:area.name,
+          label:{text:String(props.peaks.filter((peak)=>peak.areaId===area.id).length),color:'#102113',fontSize:`${10*displayScale}px`,fontWeight:'800'},
+          icon:{path:window.google.maps.SymbolPath.CIRCLE,scale:14*displayScale,fillColor:'#b7f07d',fillOpacity:.95,strokeColor:'#f5fbf3',strokeWeight:3*displayScale},
+        });
+        marker.addListener('mouseover',()=>callbacksRef.current.onHoverArea(area.id));
+        marker.addListener('mouseout',()=>callbacksRef.current.onHoverArea(null));
+        marker.addListener('click',()=>callbacksRef.current.onSelectArea(area.id));
+        markerRef.current.set(area.id,marker);
+      }
+      marker.setMap(props.detailAreaId===area.id?null:map);
+    });
+  },[mapStatus,props.areas,props.detailAreaId,props.peaks]);
+
+  useEffect(()=>{
+    if(mapStatus!=='ready'||!mapRef.current||!window.google?.maps)return;
+    const map=mapRef.current;
+    const displayScale=mapDisplayScale();
+    const detailPeaks=props.detailAreaId?props.peaks.filter((peak)=>peak.areaId===props.detailAreaId):[];
+    const visibleIds=new Set(detailPeaks.map((peak)=>peak.id));
+    peakMarkerRef.current.forEach((marker,id)=>{
+      if(!visibleIds.has(id)){marker.setMap(null);peakMarkerRef.current.delete(id)}
+    });
+    detailPeaks.forEach((peak)=>{
+      let marker=peakMarkerRef.current.get(peak.id);
+      if(!marker){
+        marker=new window.google.maps.Marker({
+          map,
+          position:{lat:peak.lat,lng:peak.lng},
+          title:`${peak.name} · ${peak.elevation.toLocaleString()}m`,
+          icon:{path:window.google.maps.SymbolPath.CIRCLE,scale:8*displayScale,fillColor:'#b7f07d',fillOpacity:.98,strokeColor:'#f5fbf3',strokeWeight:2*displayScale},
+        });
+        marker.addListener('mouseover',()=>callbacksRef.current.onHoverArea(peak.areaId));
+        marker.addListener('mouseout',()=>callbacksRef.current.onHoverArea(null));
+        marker.addListener('click',()=>callbacksRef.current.onSelectPeak(peak.id));
+        peakMarkerRef.current.set(peak.id,marker);
+      }
+      marker.setMap(map);
+    });
+  },[mapStatus,props.detailAreaId,props.peaks]);
+
   useEffect(() => {
+    const displayScale=mapDisplayScale();
     markerRef.current.forEach((marker,id) => {
       const active = id === props.selectedAreaId || id === props.hoveredAreaId;
-      marker.setIcon({path:window.google.maps.SymbolPath.CIRCLE,scale:active?18:14,fillColor:active?'#f1b56d':'#b7f07d',fillOpacity:.96,strokeColor:'#f5fbf3',strokeWeight:3});
+      marker.setIcon({path:window.google.maps.SymbolPath.CIRCLE,scale:(active?18:14)*displayScale,fillColor:active?'#f1b56d':'#b7f07d',fillOpacity:.96,strokeColor:'#f5fbf3',strokeWeight:3*displayScale});
       marker.setZIndex(active?20:1);
     });
   },[props.hoveredAreaId,props.selectedAreaId]);
 
   useEffect(() => {
-    const area = props.areas.find((item)=>item.id===props.selectedAreaId);
-    if (!area || !mapRef.current) return;
+    const displayScale=mapDisplayScale();
+    peakMarkerRef.current.forEach((marker,id)=>{
+      const active=id===props.selectedPeakId;
+      marker.setIcon({path:window.google.maps.SymbolPath.CIRCLE,scale:(active?12:8)*displayScale,fillColor:active?'#f1b56d':'#b7f07d',fillOpacity:.98,strokeColor:'#f5fbf3',strokeWeight:(active?3:2)*displayScale});
+      marker.setZIndex(active?30:5);
+    });
+  },[props.selectedPeakId,props.detailAreaId]);
+
+  useEffect(() => {
+    const map=mapRef.current;
+    if (!map) return;
+    const selectedPeak=props.peaks.find((peak)=>peak.id===props.selectedPeakId);
+    const detailPeaks=props.detailAreaId?props.peaks.filter((peak)=>peak.areaId===props.detailAreaId):[];
+    const area=props.areas.find((item)=>item.id===props.selectedAreaId);
+    if(!selectedPeak&&!detailPeaks.length&&!area)return;
+    const focusPoints=selectedPeak?[selectedPeak]:detailPeaks.length?detailPeaks:area?[area]:[];
+    const center={
+      lat:focusPoints.reduce((sum,item)=>sum+item.lat,0)/focusPoints.length,
+      lng:focusPoints.reduce((sum,item)=>sum+item.lng,0)/focusPoints.length,
+    };
+    const latitudes=focusPoints.map((item)=>item.lat);
+    const longitudes=focusPoints.map((item)=>item.lng);
+    const spread=Math.max(Math.max(...latitudes)-Math.min(...latitudes),Math.max(...longitudes)-Math.min(...longitudes));
+    const targetZoom=selectedPeak?14:detailPeaks.length?(spread>.3?9:spread>.16?10:spread>.08?11:spread>.035?12:13):(area?.distanceKm??0)>180?9:10;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const timer = window.setTimeout(()=>{
-      mapRef.current.panTo({lat:area.lat,lng:area.lng});
-      mapRef.current.setZoom(area.distanceKm>180?9:10);
-    },reduced?0:500);
-    return ()=>window.clearTimeout(timer);
-  },[props.areas,props.selectedAreaId]);
+    const timers:number[]=[];
+    map.panTo(center);
+    const zoomStep=()=>{
+      const current=Math.round(map.getZoom()??8);
+      if(current===targetZoom)return;
+      map.setZoom(current+(current<targetZoom?1:-1));
+      timers.push(window.setTimeout(zoomStep,reduced?0:130));
+    };
+    timers.push(window.setTimeout(zoomStep,reduced?0:520));
+    return()=>timers.forEach((timer)=>window.clearTimeout(timer));
+  },[props.areas,props.detailAreaId,props.peaks,props.selectedAreaId,props.selectedPeakId]);
 
   useEffect(() => {
     if (!mapRef.current || !window.google?.maps) return;

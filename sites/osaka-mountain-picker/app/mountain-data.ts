@@ -180,6 +180,7 @@ export const routes: MountainRoute[] = representativeRoutePeaks.map((peak, index
 export function peaksForArea(areaId: string) { return peaks.filter((peak) => peak.areaId === areaId); }
 export function routesForArea(areaId: string) { return routes.filter((route) => route.areaId === areaId); }
 export function routesForPeak(peakId: string) { return routes.filter((route) => route.peakId === peakId); }
+export function isJapanHundredPeak(peak: Peak) { return peak.lists.includes('日本百名山'); }
 
 export function areaMetrics(areaId: string) {
   const areaPeaks = peaksForArea(areaId);
