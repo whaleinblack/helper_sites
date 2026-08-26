@@ -11,7 +11,7 @@
     "build:static": "vite build --config vite.static.config.ts",
     "start": "vinext start",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern dist-static --ignore-pattern .next",
-    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "test": "node --experimental-strip-types --test tests/*.test.ts tests/*.test.mjs",
     "db:generate": "drizzle-kit generate",
     "route:import-gpx": "node scripts/import-gpx.mjs"
   },

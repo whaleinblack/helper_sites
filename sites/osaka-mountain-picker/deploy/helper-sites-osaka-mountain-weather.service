@@ -1,0 +1,28 @@
+[Unit]
+Description=Osaka mountain weather API
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=codex
+Group=codex
+WorkingDirectory=/srv/helper_sites/services/osaka-mountain-weather/current
+EnvironmentFile=/srv/travel_planner/shared/secrets/providers/.env
+Environment=PORT=4188
+Environment=CACHE_FILE=/srv/helper_sites/services/osaka-mountain-weather/cache/weather.json
+ExecStart=/usr/bin/node /srv/helper_sites/services/osaka-mountain-weather/current/weather-api.mjs
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+ProtectHome=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectSystem=full
+ReadWritePaths=/srv/helper_sites/services/osaka-mountain-weather/cache
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+[Install]
+WantedBy=multi-user.target

@@ -13,7 +13,7 @@ createRoot(root).render(
       displayName=""
       deploymentMode="public"
       basePath="/mountain"
-      weatherEndpoint={null}
+      weatherEndpoint="/mountain/api/weather"
     />
   </StrictMode>,
 );
