@@ -65,3 +65,48 @@ html,body,.app-shell{overflow:hidden;max-width:100%}.phase-body{overflow-x:hidde
 @media(min-width:2200px) and (min-height:1200px){.map-area-card-anchor,.map-peak-card-anchor{--map-card-scale:1.25}}
 @media(min-width:2800px) and (min-height:1500px){.map-area-card-anchor,.map-peak-card-anchor{--map-card-scale:1.5}}
 @media(min-width:3400px) and (min-height:1800px){.map-area-card-anchor,.map-peak-card-anchor{--map-card-scale:2}}
+
+/* Locked monthly-index geometry: fixed rails, fixed column widths, one shared baseline. */
+.area-year-rating>span{margin-bottom:8px;font:700 8px var(--font-geist-mono);letter-spacing:.06em;color:#8c9d93}
+.area-year-rating>div{position:relative;height:72px!important;display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;gap:4px!important;align-items:start!important}
+.area-year-rating>div::after{content:"";position:absolute;z-index:0;left:0;right:0;top:50px;height:1px;background:rgba(226,241,229,.12)}
+.area-year-rating .month-bar{position:relative;z-index:1;display:grid!important;grid-template-rows:50px 20px!important;gap:0!important;width:100%!important;height:70px!important;min-width:0!important;align-items:stretch!important}
+.area-year-rating .month-bar-track{position:relative!important;display:block!important;width:100%!important;height:50px!important;min-width:0!important;overflow:visible}
+.area-year-rating .month-bar-track i{position:absolute!important;left:50%!important;bottom:0!important;display:block!important;width:10px!important;min-width:10px!important;max-width:10px!important;margin:0!important;transform:translateX(-50%)!important;border-radius:3px 3px 0 0!important;box-sizing:border-box!important}
+.area-year-rating .month-bar small{display:grid!important;place-items:center!important;width:100%!important;height:20px!important;margin:0!important;color:#82938a;font:650 8px/20px var(--font-geist-mono)!important}
+.area-year-rating .month-bar.current i{outline:0!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.92);filter:brightness(1.08) drop-shadow(0 0 2px currentColor)}
+
+.month-chart{position:relative;height:132px!important;display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;gap:5px!important;align-items:start!important}
+.month-chart::after{content:"";position:absolute;z-index:0;left:0;right:0;top:104px;height:1px;background:rgba(226,241,229,.13)}
+.month-chart>div{position:relative;z-index:1;display:grid!important;grid-template-rows:104px 20px!important;gap:0!important;width:100%!important;height:124px!important;align-items:stretch!important}
+.month-chart-track{position:relative!important;display:block!important;width:100%!important;height:104px!important;min-width:0!important;overflow:visible}
+.month-chart-track i{position:absolute!important;left:50%!important;bottom:0!important;display:block!important;width:12px!important;min-width:12px!important;max-width:12px!important;margin:0!important;transform:translateX(-50%)!important;border-radius:3px 3px 0 0!important;box-sizing:border-box!important}
+.month-chart>div>span:nth-child(2){display:grid!important;place-items:center!important;width:100%!important;height:20px!important;margin:0!important;font:650 8px/20px var(--font-geist-mono)!important}
+.month-chart i.current{outline:0!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.92);filter:brightness(1.08) drop-shadow(0 0 2px currentColor)}
+
+/* Eight forecast days always occupy one compact line in an expanded area card. */
+.area-weather{display:grid!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;gap:2px!important;align-items:center!important;padding:8px 8px!important;overflow:hidden}
+.area-weather-day{display:flex!important;min-width:0!important;align-items:center!important;text-align:center!important}
+.area-weather-day b{justify-content:center!important}.area-weather-day small,.area-weather-day em{white-space:nowrap}
+.area-weather-empty{grid-column:1/-1!important;text-align:center!important}
+
+/* Local color glow is applied to vector layers, so only rain and sun emit light. */
+.weather-glyph{overflow:visible}.weather-glyph .weather-cloud{fill:rgba(206,225,220,.06);stroke:#d4e2de!important}
+.weather-glyph .weather-rain{fill:none;stroke:#58bfff!important;stroke-width:2!important;filter:drop-shadow(0 0 2px #58bfff) drop-shadow(0 0 4px rgba(56,158,255,.8))}
+.weather-glyph .weather-sun{fill:rgba(255,164,70,.14)!important;stroke:#ffab55!important;stroke-width:1.8!important;filter:drop-shadow(0 0 2px #ff9d43) drop-shadow(0 0 5px rgba(255,137,42,.72))}
+.weather-glyph .weather-sun-rays{fill:none;stroke:#ffae5b!important;stroke-width:1.8!important;filter:drop-shadow(0 0 3px rgba(255,145,48,.9))}
+.weather-glyph .weather-lightning{fill:rgba(255,177,73,.22)!important;stroke:#ffb24e!important;stroke-width:1.8!important;filter:drop-shadow(0 0 3px rgba(255,164,53,.95))}
+.weather-glyph .weather-snow{fill:none;stroke:#a9dcff!important;stroke-width:2.4!important;filter:drop-shadow(0 0 3px rgba(101,192,255,.8))}
+
+/* Compact map cards: photographic glass background plus zoom-driven inline scale. */
+.map-area-card-anchor{width:160px}
+.map-area-photo-card{position:relative;isolation:isolate;overflow:hidden;width:160px;border:1px solid rgba(111,218,238,.62);border-radius:14px;background-image:linear-gradient(90deg,rgba(5,18,22,.94) 0%,rgba(7,22,25,.76) 46%,rgba(7,21,24,.34) 100%),var(--map-area-photo);background-position:center,center;background-size:cover,cover;color:#ecf7f5;padding:9px 10px;text-align:left;box-shadow:0 10px 28px rgba(1,10,17,.4),inset 0 1px rgba(255,255,255,.09),0 0 14px rgba(58,205,224,.16);backdrop-filter:blur(12px) saturate(1.18);cursor:pointer;transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease}
+.map-area-photo-card::after{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(2,12,15,.3));pointer-events:none}
+.map-area-card-anchor:hover .map-area-photo-card,.map-area-card-anchor.hovered .map-area-photo-card,.map-area-card-anchor.active .map-area-photo-card{border-color:#9af5ef;box-shadow:0 13px 34px rgba(1,10,17,.5),inset 0 1px rgba(255,255,255,.12),0 0 22px rgba(79,229,235,.4);transform:translateY(-2px)}
+.map-area-card-head strong{font-size:11px;text-shadow:0 1px 4px rgba(0,0,0,.8)}.map-area-card-head small{color:#d0dfdc;text-shadow:0 1px 3px rgba(0,0,0,.9)}.map-area-card-head>b{font-size:24px}
+
+/* Deliberately smaller peripheral labels. */
+.user-chip{max-width:74px;padding:4px 6px;font-size:6px;letter-spacing:.04em;gap:4px}.user-chip i{width:4px;height:4px;box-shadow:0 0 0 2px rgba(184,239,125,.1)}
+.photo-credit{padding:3px 5px 1px!important;font:500 3.5px/1.35 var(--font-geist-mono)!important;opacity:.72}
+
+@media(max-width:760px){.map-area-card-anchor,.map-area-photo-card{width:148px}.area-weather{padding-inline:5px!important}.area-weather-day small,.area-weather-day em{font-size:5px}.area-weather-day b{font-size:7px}.area-weather-day svg{width:13px;height:13px}}

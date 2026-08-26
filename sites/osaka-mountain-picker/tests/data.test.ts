@@ -39,7 +39,10 @@ test('catalog has the planned breadth and valid relationships', () => {
 test('season insight explains ordinary heat and snow mountain periods', () => {
   const ikoma=mountainAreas.find((area)=>area.id==='ikoma')!;
   const daisen=mountainAreas.find((area)=>area.id==='daisen')!;
-  assert.match(getMonthInsight(ikoma,7).items[0].value,/炎热|温暖/);
+  const summerInsight=getMonthInsight(ikoma,7);
+  assert.match(summerInsight.items[0].value,/炎热|温暖/);
+  const sunlight=summerInsight.items.find((item)=>item.label==='平均日出・日落');
+  assert.match(sunlight?.value??'',/^\d{2}:\d{2} · \d{2}:\d{2}$/);
   assert.equal(getMonthInsight(daisen,0).snowPhase,'严冬期');
   assert.equal(getMonthInsight(daisen,3).snowPhase,'融雪・残雪期');
   assert.equal(getMonthInsight(daisen,10).snowPhase,'初雪・移行期');

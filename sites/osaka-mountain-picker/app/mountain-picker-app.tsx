@@ -39,7 +39,7 @@ function MonthInsightPopover({area,month}:{area:MountainArea;month:number}){
     const place=(clientX:number,clientY:number)=>{
       const scale=scaleForViewport();
       const width=320*scale;
-      const height=250*scale;
+      const height=290*scale;
       const gap=18;
       const left=clientX+gap+width<=window.innerWidth-12?clientX+gap:Math.max(12,clientX-width-gap);
       const top=Math.max(12,Math.min(clientY-22,window.innerHeight-height-12));
@@ -72,11 +72,12 @@ function MonthInsightPopover({area,month}:{area:MountainArea;month:number}){
 }
 
 function WeatherGlyph({summary}:{summary:string}){
-  if(/雷|thunder/i.test(summary))return <svg viewBox="0 0 24 24" aria-label={summary}><path d="M7 17a4 4 0 1 1 1-7.87A6 6 0 0 1 19 12a3 3 0 0 1-3 3h-3l-2 4h3l-4 4 1-5H8"/></svg>;
-  if(/雨|rain|drizzle/i.test(summary))return <svg viewBox="0 0 24 24" aria-label={summary}><path d="M7 16a4 4 0 1 1 1-7.87A6 6 0 0 1 19 11a3 3 0 0 1-3 3H7m2 3-1 2m5-2-1 2m5-2-1 2"/></svg>;
-  if(/雪|snow/i.test(summary))return <svg viewBox="0 0 24 24" aria-label={summary}><path d="M7 15a4 4 0 1 1 1-7.87A6 6 0 0 1 19 10a3 3 0 0 1-3 3H7m3 4h.01M14 17h.01M12 20h.01"/></svg>;
-  if(/云|cloud|曇|雾|mist|fog/i.test(summary))return <svg viewBox="0 0 24 24" aria-label={summary}><path d="M6 17a4 4 0 1 1 1.2-7.82A6 6 0 0 1 18.7 11 3 3 0 0 1 17 17H6Z"/></svg>;
-  return <svg viewBox="0 0 24 24" aria-label={summary}><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4m0-14.2-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>;
+  if(/雷|thunder/i.test(summary))return <svg className="weather-glyph" viewBox="0 0 24 24" aria-label={summary}><path className="weather-cloud" d="M7 16a4 4 0 1 1 1-7.87A6 6 0 0 1 19 11a3 3 0 0 1-3 3H7"/><path className="weather-lightning" d="m12 15-2 4h3l-3 4 1-3H8"/></svg>;
+  if(/雨|rain|drizzle/i.test(summary))return <svg className="weather-glyph" viewBox="0 0 24 24" aria-label={summary}><path className="weather-cloud" d="M7 15a4 4 0 1 1 1-7.87A6 6 0 0 1 19 10a3 3 0 0 1-3 3H7"/><path className="weather-rain" d="m8.5 17-1 2.5m5-2.5-1 2.5m5-2.5-1 2.5"/></svg>;
+  if(/雪|snow/i.test(summary))return <svg className="weather-glyph" viewBox="0 0 24 24" aria-label={summary}><path className="weather-cloud" d="M7 15a4 4 0 1 1 1-7.87A6 6 0 0 1 19 10a3 3 0 0 1-3 3H7"/><path className="weather-snow" d="M9 18h.01M14 18h.01M11.5 21h.01"/></svg>;
+  if(/多云|晴时多云|partly|few clouds|scattered/i.test(summary))return <svg className="weather-glyph" viewBox="0 0 24 24" aria-label={summary}><circle className="weather-sun" cx="9" cy="9" r="3"/><path className="weather-sun-rays" d="M9 3v1.5M9 13.5V15M3 9h1.5m9 0H15M4.8 4.8l1 1m6.4 6.4 1 1m0-8.4-1 1"/><path className="weather-cloud" d="M7 18a3.5 3.5 0 1 1 1.2-6.8A5 5 0 0 1 17.7 13 2.6 2.6 0 0 1 16 18H7Z"/></svg>;
+  if(/云|cloud|曇|阴|雾|mist|fog/i.test(summary))return <svg className="weather-glyph" viewBox="0 0 24 24" aria-label={summary}><path className="weather-cloud" d="M6 17a4 4 0 1 1 1.2-7.82A6 6 0 0 1 18.7 11 3 3 0 0 1 17 17H6Z"/></svg>;
+  return <svg className="weather-glyph" viewBox="0 0 24 24" aria-label={summary}><circle className="weather-sun" cx="12" cy="12" r="4"/><path className="weather-sun-rays" d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4m0-14.2-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>;
 }
 
 type MountainPickerAppProps = {
@@ -173,7 +174,7 @@ export default function MountainPickerApp({
   })();
 
   return <main className="app-shell">
-    <GoogleMountainMap areas={filteredAreas} peaks={peaks} weatherByArea={weatherByArea} selectedMonth={selectedMonth} selectedAreaId={selectedAreaId} selectedPeakId={selectedPeakId} detailAreaId={phase>=2?selectedAreaId:expandedAreaId} hoveredAreaId={hoveredAreaId} selectedRoute={phase>=2?selectedRoute:null} onHoverArea={setHoveredAreaId} onSelectArea={focusAreaFromMap} onSelectPeak={choosePeak} />
+    <GoogleMountainMap areas={filteredAreas} peaks={peaks} basePath={normalizedBasePath} selectedMonth={selectedMonth} selectedAreaId={selectedAreaId} selectedPeakId={selectedPeakId} detailAreaId={phase>=2?selectedAreaId:expandedAreaId} hoveredAreaId={hoveredAreaId} selectedRoute={phase>=2?selectedRoute:null} onHoverArea={setHoveredAreaId} onSelectArea={focusAreaFromMap} onSelectPeak={choosePeak} />
 
     <aside className="planner">
       <header className="app-header">
@@ -204,8 +205,8 @@ export default function MountainPickerApp({
                 <span className="area-course"><b className={courseTone(m.maxCourse)}>{rangeLabel(area.id)}</b><small>コース定数</small></span><span className="area-score month-insight-anchor"><b className={`grade-${grade.toLowerCase()}`}>{grade}</b><small>{monthNames[selectedMonth]}推荐</small><MonthInsightPopover area={area} month={selectedMonth}/></span>
               </button>
               <div className="area-card-footer"><span>{formatMinutes(area.driveMinutes)} 驾车</span><span>{formatMinutes(area.transitMinutes)} 公交</span><span>{m.famousCount} 名山</span><button type="button" aria-expanded={expanded} onClick={()=>chooseArea(area.id)}>{expanded?'收起':'展开山峰'}⌄</button></div>
-              <div className="area-weather" aria-label={`${area.name}天气预报`} title={`天气为海拔约 ${area.weatherElevation}m 的山地代表点预测数据`}><span className="area-weather-label">{cardLoading?'天气更新中':cardWeather?.stale?'旧缓存':'未来预报'} · {area.weatherElevation}m</span>{(cardWeather?.days??[]).map((day)=><span className="area-weather-day" key={day.date}><small>{day.date.slice(5).replace('-','/')}</small><b><WeatherGlyph summary={day.summary}/>{Math.round(day.max)}°</b><em>雨 {Math.round(day.pop)}%</em></span>)}{!cardLoading&&!cardWeather?.days.length&&<span className="area-weather-empty">{cardWeather?.message??'预报待配置'}</span>}</div>
-              <div className={`peak-sublist ${expanded?'expanded':''}`} aria-hidden={!expanded}><div className="area-year-rating"><span>12 MONTHS · 悬浮查看原因</span><div>{area.monthScores.map((score,month)=>{const monthGrade=recommendationGrade(score);return <span key={monthNames[month]} tabIndex={expanded?0:-1} className={`month-bar month-insight-anchor ${selectedMonth===month?'current ':''}grade-${monthGrade.toLowerCase()}`} aria-label={`${monthNames[month]}：${monthGrade}，${score}分`}><span className="month-bar-track"><i style={{height:`${score}%`}}/></span><small>{month+1}</small><MonthInsightPopover area={area} month={month}/></span>})}</div></div>{peaksForArea(area.id).map((peak)=><button type="button" key={peak.id} tabIndex={expanded?0:-1} onClick={()=>choosePeak(peak.id)}><span><b>{peak.name}</b><small>{peak.lists.join(' · ')||peak.tags.slice(0,2).join(' · ')}</small></span><strong>{peak.elevation.toLocaleString()}m</strong><strong className={`peak-course ${courseTone(routesForPeak(peak.id)[0]?.courseConstant??null)}`}>定数 {peakRangeLabel(peak.id)}</strong><em>→</em></button>)}<a className="photo-credit" href={photo.sourceUrl} title={`${photo.title} · ${photo.artist} · ${photo.license} · Wikimedia Commons`} target="_blank" rel="noreferrer">图片鸣谢：{photo.artist} · {photo.license} ↗</a></div>
+              <div className="area-weather" aria-label={`${area.name}天气预报`} title={`天气为海拔约 ${area.weatherElevation}m 的山地代表点预测数据`}>{(cardWeather?.days??[]).map((day)=><span className="area-weather-day" key={day.date}><small>{day.date.slice(5).replace('-','/')}</small><b><WeatherGlyph summary={day.summary}/>{Math.round(day.max)}°</b><em>雨 {Math.round(day.pop)}%</em></span>)}{cardLoading&&<span className="area-weather-empty">天气更新中</span>}{!cardLoading&&!cardWeather?.days.length&&<span className="area-weather-empty">{cardWeather?.message??'预报待配置'}</span>}</div>
+              <div className={`peak-sublist ${expanded?'expanded':''}`} aria-hidden={!expanded}><div className="area-year-rating"><span>每月登山指数</span><div>{area.monthScores.map((score,month)=>{const monthGrade=recommendationGrade(score);return <span key={monthNames[month]} tabIndex={expanded?0:-1} className={`month-bar month-insight-anchor ${selectedMonth===month?'current ':''}grade-${monthGrade.toLowerCase()}`} aria-label={`${monthNames[month]}：${monthGrade}，${score}分`}><span className="month-bar-track"><i style={{height:`${score}%`}}/></span><small>{month+1}</small><MonthInsightPopover area={area} month={month}/></span>})}</div></div>{peaksForArea(area.id).map((peak)=><button type="button" key={peak.id} tabIndex={expanded?0:-1} onClick={()=>choosePeak(peak.id)}><span><b>{peak.name}</b><small>{peak.lists.join(' · ')||peak.tags.slice(0,2).join(' · ')}</small></span><strong>{peak.elevation.toLocaleString()}m</strong><strong className={`peak-course ${courseTone(routesForPeak(peak.id)[0]?.courseConstant??null)}`}>定数 {peakRangeLabel(peak.id)}</strong><em>→</em></button>)}<a className="photo-credit" href={photo.sourceUrl} title={`${photo.title} · ${photo.artist} · ${photo.license} · Wikimedia Commons`} target="_blank" rel="noreferrer">图片鸣谢：{photo.artist} · {photo.license} ↗</a></div>
             </article>})}
             {!filteredAreas.length&&<div className="empty-state"><b>没有符合条件的山域</b><p>放宽驾车时间或清除标签后再试。</p></div>}
           </div>
