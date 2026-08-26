@@ -251,7 +251,7 @@ export default function GoogleMountainMap(props: Props) {
     const overlays=areaOverlayRef.current;
     clearOverlays(overlays);
     if(!preferences.showMarkers||props.detailAreaId)return;
-    props.areas.forEach((area)=>{
+    props.areas.forEach((area,index)=>{
       const score=area.monthScores[props.selectedMonth];
       const grade=recommendationGrade(score);
       const insight=getMonthInsight(area,props.selectedMonth);
@@ -266,9 +266,13 @@ export default function GoogleMountainMap(props: Props) {
       const button=document.createElement('button');
       button.type='button';
       button.className='map-area-photo-card';
-      button.setAttribute('aria-label',`选择${area.name}，${monthNames[props.selectedMonth]}评级${grade}${score}分`);
+      const order=String(index+1).padStart(2,'0');
+      button.setAttribute('aria-label',`${order}，选择${area.name}，${monthNames[props.selectedMonth]}评级${grade}${score}分`);
       button.addEventListener('click',(event)=>{event.stopPropagation();callbacksRef.current.onSelectArea(area.id)});
 
+      const orderNode=document.createElement('span');
+      orderNode.className='map-area-card-order';
+      orderNode.textContent=order;
       const head=document.createElement('span');
       head.className='map-area-card-head';
       const title=document.createElement('span');
@@ -281,7 +285,7 @@ export default function GoogleMountainMap(props: Props) {
       gradeNode.className=`grade-${grade.toLowerCase()}`;
       gradeNode.textContent=grade;
       head.append(title,gradeNode);
-      button.appendChild(head);
+      button.append(orderNode,head);
 
       const report=document.createElement('aside');
       report.className='map-area-score-report';

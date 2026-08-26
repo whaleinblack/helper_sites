@@ -38,7 +38,7 @@ function MonthInsightPopover({area,month}:{area:MountainArea;month:number}){
     const scaleForViewport=()=>window.innerWidth>=3400&&window.innerHeight>=1800?2:window.innerWidth>=2800&&window.innerHeight>=1500?1.5:window.innerWidth>=2200&&window.innerHeight>=1200?1.25:1;
     const place=(clientX:number,clientY:number)=>{
       const scale=scaleForViewport();
-      const width=320*scale;
+      const width=290*scale;
       const height=290*scale;
       const gap=18;
       const left=clientX+gap+width<=window.innerWidth-12?clientX+gap:Math.max(12,clientX-width-gap);
@@ -63,11 +63,11 @@ function MonthInsightPopover({area,month}:{area:MountainArea;month:number}){
       anchor.removeEventListener('focusout',blur);
     };
   },[]);
-  const popover=position?<span className="month-insight month-insight-floating" role="tooltip" style={{left:position.left,top:position.top,'--popover-scale':position.scale} as CSSProperties}>
-    <span className="month-insight-head"><span><b>{area.name} · {monthNames[month]}</b></span><strong className={`grade-${grade.toLowerCase()}`}>{grade}<small>{score}</small></strong></span>
-    <span className="month-insight-grid">{insight.items.map((item)=><span className={`insight-row tone-${item.tone} ${item.wide?'insight-wide':''}`} title={item.detail} key={item.label}><small>{item.label}</small><b>{item.value}</b></span>)}</span>
-    <span className="month-insight-summary month-insight-overall">综合：{gradeMeaning[grade]} · {insight.summary}</span>
-  </span>:null;
+  const popover=position?<aside className="map-area-score-report map-area-score-report-floating" role="tooltip" style={{left:position.left,top:position.top,'--popover-scale':position.scale} as CSSProperties}>
+    <header><strong>{area.name} · {monthNames[month]}</strong><b className={`grade-${grade.toLowerCase()}`}>{grade}{score}</b></header>
+    <div className="map-area-score-grid">{insight.items.map((item)=><span className={`tone-${item.tone}${item.wide?' insight-wide':''}`} title={item.detail} key={item.label}><small>{item.label}</small><b>{item.value}</b></span>)}</div>
+    <p>综合：{gradeMeaning[grade]} · {insight.summary}</p>
+  </aside>:null;
   return <><span ref={triggerRef} className="month-insight-trigger" aria-hidden="true"/>{popover&&createPortal(popover,document.body)}</>;
 }
 
