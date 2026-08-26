@@ -6,6 +6,7 @@ export type MonthInsightItem = {
   value: string;
   detail: string;
   tone: InsightTone;
+  wide?: boolean;
 };
 
 export type MonthInsight = {
@@ -80,9 +81,12 @@ function monthlyAverageSunTimes(area:MountainArea,month:number){
     sunriseTotal+=solarNoon-daylightOffset;
     sunsetTotal+=solarNoon+daylightOffset;
   }
+  const averageSunrise=sunriseTotal/daysInMonth;
+  const averageSunset=sunsetTotal/daysInMonth;
   return {
-    sunrise:formatSolarMinutes(sunriseTotal/daysInMonth),
-    sunset:formatSolarMinutes(sunsetTotal/daysInMonth),
+    sunrise:formatSolarMinutes(averageSunrise),
+    sunset:formatSolarMinutes(averageSunset),
+    daylightMinutes:Math.round(averageSunset-averageSunrise),
   };
 }
 
@@ -105,9 +109,11 @@ export function getMonthInsight(area:MountainArea, month:number):MonthInsight {
   const trailValue=snowTechnical
     ? (snow==='严冬期'?'冰雪技术另计':snow==='融雪・残雪期'?'腐雪・踏抜风险':'积雪路况另计')
     : trailScore>=75?'路况较稳定':trailScore>=55?'局部湿滑':'泥泞・雷雨风险';
-  const lightValue=shortDayMonths.has(month)?'日照较短':accessScore<55?'季节交通受限':'交通与日照良好';
+  const transportValue=accessScore<55?'季节交通受限':'交通条件良好';
   const temperatureValue=`${thermalLabel(max,snow)} · ${min}–${max}℃`;
   const sunTimes=monthlyAverageSunTimes(area,month);
+  const daylightHours=Math.floor(sunTimes.daylightMinutes/60);
+  const daylightRemainder=sunTimes.daylightMinutes%60;
 
   const items:MonthInsightItem[]=[
     {label:'气温・积雪',value:temperatureValue,detail:snowTechnical?'按代表点海拔推算；冬季技术难度不计入普通路线定数。':'按山域代表点海拔和月平均温度推算。',tone:toneFor(snowTechnical?Math.min(48,mountainWeatherScore):max>=7&&max<=24?88:max>=3&&max<27?66:38)},
@@ -115,8 +121,8 @@ export function getMonthInsight(area:MountainArea, month:number):MonthInsight {
     {label:'风力',value:windValue,detail:exposedAreas.has(area.id)?'开阔稜线或海风影响较明显。':'代表山体的季节风暴露度估计。',tone:toneFor(windScore)},
     {label:'路况・技术',value:trailValue,detail:snowTechnical?'须另行核验雪深、结冰、雪崩地形和冬季封路；不沿用无雪期难度。':'反映泥泞、雷雨、落叶与普通登山道季节状态。',tone:toneFor(trailScore)},
     {label:'景色',value:sceneryScore>=90?'当季亮点':sceneryScore>=65?'景观尚佳':'非主景季',detail:area.bestMonths.includes(month+1)?'进入该山域的新绿、花期、稜线或红叶窗口。':'不是资料中标记的主要景观月份。',tone:toneFor(sceneryScore)},
-    {label:'交通・日照',value:lightValue,detail:shortDayMonths.has(month)?'需为下山和末班交通保留更大余量。':'综合季节道路、公共交通和白昼长度。',tone:toneFor(accessScore)},
-    {label:'平均日出・日落',value:`${sunTimes.sunrise} · ${sunTimes.sunset}`,detail:'按山域中心经纬度逐日计算该月平均太阳升落时间（日本时间）；山体遮挡未计。',tone:'neutral'},
+    {label:'交通',value:transportValue,detail:shortDayMonths.has(month)?'需为下山和末班交通保留更大余量。':'综合季节道路与公共交通条件。',tone:toneFor(accessScore)},
+    {label:'日出・日落与白天活动时间',value:`日出 ${sunTimes.sunrise} · 日落 ${sunTimes.sunset} · ${daylightHours}h ${daylightRemainder}m`,detail:'按山域中心经纬度逐日计算该月平均太阳升落与白昼长度（日本时间）；山体遮挡未计。',tone:'neutral',wide:true},
   ];
   const weakest=[...items].sort((a,b)=>['bad','caution','fair','neutral','good'].indexOf(a.tone)-['bad','caution','fair','neutral','good'].indexOf(b.tone)).slice(0,2).map((item)=>item.value);
   return {temperatureRange:`${min}–${max}℃`,snowPhase:snow,summary:`主要制约：${weakest.join('、')}`,items};

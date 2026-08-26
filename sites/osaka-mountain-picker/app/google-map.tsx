@@ -297,7 +297,7 @@ export default function GoogleMountainMap(props: Props) {
       grid.className='map-area-score-grid';
       insight.items.forEach((item)=>{
         const row=document.createElement('span');
-        row.className=`tone-${item.tone}`;
+        row.className=`tone-${item.tone}${item.wide?' insight-wide':''}`;
         const label=document.createElement('small');
         label.textContent=item.label;
         const value=document.createElement('b');

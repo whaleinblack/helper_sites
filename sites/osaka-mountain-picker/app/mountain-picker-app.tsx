@@ -65,7 +65,7 @@ function MonthInsightPopover({area,month}:{area:MountainArea;month:number}){
   },[]);
   const popover=position?<span className="month-insight month-insight-floating" role="tooltip" style={{left:position.left,top:position.top,'--popover-scale':position.scale} as CSSProperties}>
     <span className="month-insight-head"><span><b>{area.name} · {monthNames[month]}</b></span><strong className={`grade-${grade.toLowerCase()}`}>{grade}<small>{score}</small></strong></span>
-    <span className="month-insight-grid">{insight.items.map((item)=><span className={`insight-row tone-${item.tone}`} title={item.detail} key={item.label}><small>{item.label}</small><b>{item.value}</b></span>)}</span>
+    <span className="month-insight-grid">{insight.items.map((item)=><span className={`insight-row tone-${item.tone} ${item.wide?'insight-wide':''}`} title={item.detail} key={item.label}><small>{item.label}</small><b>{item.value}</b></span>)}</span>
     <span className="month-insight-summary month-insight-overall">综合：{gradeMeaning[grade]} · {insight.summary}</span>
   </span>:null;
   return <><span ref={triggerRef} className="month-insight-trigger" aria-hidden="true"/>{popover&&createPortal(popover,document.body)}</>;
