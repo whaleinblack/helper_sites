@@ -192,7 +192,7 @@ export default function GoogleMountainMap(props: Props) {
     loadGoogleMaps().then(() => {
       if (cancelled || !hostRef.current || !window.google?.maps) return;
       const map = new window.google.maps.Map(hostRef.current, {
-        center:{lat:34.82,lng:135.65}, zoom:8, mapTypeId:'terrain', disableDefaultUI:true,
+        center:{lat:34.82,lng:135.65}, zoom:9, mapTypeId:'terrain', disableDefaultUI:true,
         zoomControl:true, clickableIcons:false, gestureHandling:'greedy',
         styles:mapStyles(DEFAULT_MAP_PREFERENCES),
       });

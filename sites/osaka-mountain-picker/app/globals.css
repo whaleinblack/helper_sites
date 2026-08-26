@@ -125,3 +125,17 @@ html,body,.app-shell{overflow:hidden;max-width:100%}.phase-body{overflow-x:hidde
 .map-area-score-grid>span.insight-wide{grid-column:1/-1;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:10px}.map-area-score-grid>span.insight-wide b{margin:0;text-align:right}
 .photo-credit{height:7px!important;max-height:7px!important;padding:1px 5px 0!important;font:500 2.5px/1 var(--font-geist-mono)!important;opacity:.55!important}
 .area-name>b{display:flex;align-items:baseline;gap:8px;min-width:0;margin-top:0}.area-name .area-prefectures{flex:0 0 auto;color:#687a70;font:550 7px/1 var(--font-geist-sans);letter-spacing:0;opacity:.72}
+
+/* Dark glass map-settings surface; the map tiles themselves remain unchanged. */
+.map-controls button{border-color:rgba(231,244,234,.15);background:rgba(8,17,14,.9);color:#dce8df;box-shadow:0 10px 28px rgba(1,8,5,.24);backdrop-filter:blur(14px)}
+.map-controls button.active{border-color:rgba(184,239,125,.35);background:#17271f;color:var(--green)}
+.map-settings{border-color:rgba(230,242,232,.14);background:rgba(8,17,14,.95);color:#eef5ef;box-shadow:0 24px 65px rgba(1,8,5,.52),inset 0 1px rgba(255,255,255,.05);backdrop-filter:blur(22px) saturate(1.15);scrollbar-color:#30443a transparent}
+.map-settings header{border-bottom-color:rgba(230,242,232,.11)}.map-settings header small{color:#74877c}.map-settings header>button{color:#82958a}.map-settings header>button:hover{color:#e6efe9}
+.map-settings section{border-bottom-color:rgba(230,242,232,.09)}.map-setting-label,.map-select-label>span,.map-opacity>span{color:#82958a}
+.map-type-options button,.map-settings footer button{border-color:rgba(230,242,232,.12);background:#14231d;color:#9dafb0}
+.map-type-options button:hover,.map-settings footer button:hover{border-color:rgba(184,239,125,.3);color:#dce9e1}
+.map-type-options button.active{border-color:rgba(184,239,125,.45);background:rgba(184,239,125,.12);color:var(--green)}
+.map-select-label select{border-color:rgba(230,242,232,.12);background:#14231d;color:#d6e2da}
+.map-select-label option{background:#14231d;color:#d6e2da}.map-opacity input{accent-color:var(--green)}
+.map-toggle-grid label{border-color:rgba(230,242,232,.1);background:#14231d;color:#aebdb4}.map-toggle-grid label:hover{border-color:rgba(184,239,125,.24)}.map-toggle-grid input{accent-color:var(--green)}
+.map-settings section p{color:#718278}
