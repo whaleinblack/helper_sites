@@ -100,7 +100,7 @@ export default function MountainPickerApp({
   const [selectedAreaId,setSelectedAreaId]=useState('rokko');
   const [selectedPeakId,setSelectedPeakId]=useState<string|null>(null);
   const [selectedRouteId,setSelectedRouteId]=useState<string|null>(routes[0]?.id??null);
-  const [expandedAreaId,setExpandedAreaId]=useState<string|null>('rokko');
+  const [expandedAreaId,setExpandedAreaId]=useState<string|null>(null);
   const [hoveredAreaId,setHoveredAreaId]=useState<string|null>(null);
   const [query,setQuery]=useState('');
   const [rehabMode,setRehabMode]=useState(true);

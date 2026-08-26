@@ -250,8 +250,8 @@ export default function GoogleMountainMap(props: Props) {
     const map=mapRef.current;
     const overlays=areaOverlayRef.current;
     clearOverlays(overlays);
-    if(!preferences.showMarkers)return;
-    props.areas.filter((area)=>props.detailAreaId!==area.id).forEach((area)=>{
+    if(!preferences.showMarkers||props.detailAreaId)return;
+    props.areas.forEach((area)=>{
       const score=area.monthScores[props.selectedMonth];
       const grade=recommendationGrade(score);
       const insight=getMonthInsight(area,props.selectedMonth);
@@ -368,7 +368,7 @@ export default function GoogleMountainMap(props: Props) {
     if (!map) return;
     const selectedPeak=props.peaks.find((peak)=>peak.id===props.selectedPeakId);
     const detailPeaks=props.detailAreaId?props.peaks.filter((peak)=>peak.areaId===props.detailAreaId):[];
-    const area=props.areas.find((item)=>item.id===props.selectedAreaId);
+    const area=props.detailAreaId?props.areas.find((item)=>item.id===props.detailAreaId):null;
     if(!selectedPeak&&!detailPeaks.length&&!area)return;
     const focusPoints=selectedPeak?[selectedPeak]:detailPeaks.length?detailPeaks:area?[area]:[];
     const center={
