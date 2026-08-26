@@ -124,3 +124,4 @@ html,body,.app-shell{overflow:hidden;max-width:100%}.phase-body{overflow-x:hidde
 .insight-row.insight-wide small{white-space:nowrap}.insight-row.insight-wide b{margin:0!important;text-align:right!important}
 .map-area-score-grid>span.insight-wide{grid-column:1/-1;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:10px}.map-area-score-grid>span.insight-wide b{margin:0;text-align:right}
 .photo-credit{height:7px!important;max-height:7px!important;padding:1px 5px 0!important;font:500 2.5px/1 var(--font-geist-mono)!important;opacity:.55!important}
+.area-name>b{display:flex;align-items:baseline;gap:8px;min-width:0;margin-top:0}.area-name .area-prefectures{flex:0 0 auto;color:#687a70;font:550 7px/1 var(--font-geist-sans);letter-spacing:0;opacity:.72}
