@@ -10,6 +10,10 @@ import { getMonthInsight } from './month-insights';
 type WeatherDay = { date:string; min:number; max:number; pop:number; rain:number; wind:number; summary:string };
 type WeatherResponse = { status:'fresh'|'refreshed'|'stale'|'unconfigured'; updatedAt:string|null; availableDays:number; days:WeatherDay[]; stale:boolean; message?:string };
 type SortKey = 'recommended'|'distance'|'drive'|'transit'|'elevation'|'course-min'|'course-max'|'popularity';
+const unconfiguredWeather: WeatherResponse = {
+  status:'unconfigured',updatedAt:null,availableDays:0,days:[],stale:false,
+  message:'实时天气未配置；月度气候档案仍可使用。',
+};
 
 const phases = [{id:1,ja:'探す',zh:'选山'},{id:2,ja:'歩く',zh:'路线'},{id:3,ja:'行く',zh:'条件'},{id:4,ja:'決める',zh:'决定'}];
 const currentMonthIndex = new Date().getMonth();
@@ -42,7 +46,20 @@ function WeatherGlyph({summary}:{summary:string}){
   return <svg viewBox="0 0 24 24" aria-label={summary}><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4m0-14.2-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>;
 }
 
-export default function MountainPickerApp({ displayName }:{displayName:string}) {
+type MountainPickerAppProps = {
+  displayName: string;
+  deploymentMode?: 'private' | 'public';
+  basePath?: string;
+  weatherEndpoint?: string | null;
+};
+
+export default function MountainPickerApp({
+  displayName,
+  deploymentMode = 'private',
+  basePath = '',
+  weatherEndpoint = '/api/weather',
+}: MountainPickerAppProps) {
+  const normalizedBasePath = basePath.replace(/\/$/, '');
   const [phase,setPhase]=useState(1);
   const [phaseDirection,setPhaseDirection]=useState<'forward'|'back'>('forward');
   const [selectedMonth,setSelectedMonth]=useState(currentMonthIndex);
@@ -63,7 +80,7 @@ export default function MountainPickerApp({ displayName }:{displayName:string}) 
   const selectedPeak=peaks.find((peak)=>peak.id===selectedPeakId)??null;
   const subjectRoutes=selectedPeak?routesForPeak(selectedPeak.id):routesForArea(selectedArea.id);
   const selectedRoute=subjectRoutes.find((route)=>route.id===selectedRouteId)??subjectRoutes[0]??null;
-  const weather=weatherByArea[selectedAreaId]??null;
+  const weather=weatherByArea[selectedAreaId]??(weatherEndpoint?null:unconfiguredWeather);
   const weatherLoading=!weather;
 
   const filteredAreas=useMemo(()=>{
@@ -88,16 +105,17 @@ export default function MountainPickerApp({ displayName }:{displayName:string}) 
   },[dayTripOnly,famousOnly,maxDrive,query,rehabMode,selectedMonth,sortKey]);
 
   useEffect(()=>{
+    if (!weatherEndpoint) return;
     const targets=phase===1?filteredAreas:mountainAreas.filter((area)=>area.id===selectedAreaId);
     for(const area of targets){
       if(requestedWeather.current.has(area.id))continue;
       requestedWeather.current.add(area.id);
-      fetch(`/api/weather?rangeId=${encodeURIComponent(area.id)}`)
+      fetch(`${weatherEndpoint}?rangeId=${encodeURIComponent(area.id)}`)
         .then(async(response)=>{if(!response.ok)throw new Error('weather');return response.json() as Promise<WeatherResponse>})
         .then(data=>setWeatherByArea((current)=>({...current,[area.id]:data})))
         .catch(()=>setWeatherByArea((current)=>({...current,[area.id]:{status:'stale',updatedAt:null,availableDays:0,days:[],stale:true,message:'天气服务暂不可用'}})));
     }
-  },[filteredAreas,phase,selectedAreaId]);
+  },[filteredAreas,phase,selectedAreaId,weatherEndpoint]);
 
   function advanceAfterSelection(nextPhase=2){
     const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -127,7 +145,7 @@ export default function MountainPickerApp({ displayName }:{displayName:string}) 
     <aside className="planner">
       <header className="app-header">
         <div className="brand-round">山</div><div className="brand-copy"><span>PICK A PEAK · OSAKA</span><b>下一座山</b></div>
-        <div className="user-chip" title={displayName}><i /> PRIVATE</div>
+        <div className="user-chip" title={displayName || '公开访问'}><i /> {deploymentMode === 'public' ? 'PUBLIC' : 'PRIVATE'}</div>
       </header>
       <nav className="phase-tabs" aria-label="规划阶段">
         {phases.map((item)=><button type="button" key={item.id} className={phase===item.id?'active':''} onClick={()=>goPhase(item.id)} disabled={item.id>2&&!selectedRoute}><span>0{item.id}</span><b>{item.ja}</b><small>{item.zh}</small></button>)}
@@ -147,7 +165,7 @@ export default function MountainPickerApp({ displayName }:{displayName:string}) 
           </div>
           <div className="catalog-tools"><span>{rehabMode?'优先体力度 1–2':'全部难度'} · {monthNames[selectedMonth]}</span><select value={sortKey} onChange={(event)=>setSortKey(event.target.value as SortKey)} aria-label="排序方式"><option value="recommended">月份推荐度</option><option value="distance">直线距离</option><option value="drive">驾车时间</option><option value="transit">公交时间</option><option value="elevation">最高海拔</option><option value="course-min">最低定数</option><option value="course-max">最高定数</option><option value="popularity">热门度</option></select></div>
           <div className="catalog-list">
-            {filteredAreas.map((area,index)=>{const m=areaMetrics(area.id);const expanded=expandedAreaId===area.id;const active=selectedAreaId===area.id;const cardWeather=weatherByArea[area.id];const cardLoading=!cardWeather;const monthScore=area.monthScores[selectedMonth];const grade=recommendationGrade(monthScore);const photo=mountainImages[area.id as keyof typeof mountainImages];return <article id={`area-card-${area.id}`} key={area.id} style={{'--area-photo':`url("${photo.src}")`} as CSSProperties} className={`area-card ${active?'active':''}`} onMouseEnter={()=>setHoveredAreaId(area.id)} onMouseLeave={()=>setHoveredAreaId(null)}>
+            {filteredAreas.map((area,index)=>{const m=areaMetrics(area.id);const expanded=expandedAreaId===area.id;const active=selectedAreaId===area.id;const cardWeather=weatherByArea[area.id]??(weatherEndpoint?undefined:unconfiguredWeather);const cardLoading=!cardWeather;const monthScore=area.monthScores[selectedMonth];const grade=recommendationGrade(monthScore);const photo=mountainImages[area.id as keyof typeof mountainImages];const photoPath=`${normalizedBasePath}${photo.src}`;return <article id={`area-card-${area.id}`} key={area.id} style={{'--area-photo':`url("${photoPath}")`} as CSSProperties} className={`area-card ${active?'active':''}`} onMouseEnter={()=>setHoveredAreaId(area.id)} onMouseLeave={()=>setHoveredAreaId(null)}>
               <button type="button" className="area-select" onClick={()=>chooseArea(area.id)}>
                 <span className="area-order">{String(index+1).padStart(2,'0')}</span><span className="area-name"><small>{area.kind} · {area.prefectures.join(' / ')}</small><b>{area.name}</b><em>{m.peakCount} 峰 · 最高 {m.highest.toLocaleString()}m</em></span>
                 <span className="area-course"><b className={courseTone(m.maxCourse)}>{rangeLabel(area.id)}</b><small>コース定数</small></span><span className="area-score month-insight-anchor"><b className={`grade-${grade.toLowerCase()}`}>{grade}</b><small>{monthNames[selectedMonth]}推荐</small><MonthInsightPopover area={area} month={selectedMonth}/></span>
@@ -195,7 +213,7 @@ export default function MountainPickerApp({ displayName }:{displayName:string}) 
           <div className="external-actions stacked"><a target="_blank" rel="noreferrer" href={`https://www.google.com/maps/dir/?api=1&origin=Osaka+Station&destination=${encodeURIComponent(googleDestination)}`}>打开 Google Maps ↗</a><a target="_blank" rel="noreferrer" href={`https://yamap.com/mountains?q=${encodeURIComponent(selectedPeak?.name??selectedArea.name)}`}>在 YAMAP 核验 ↗</a><a target="_blank" rel="noreferrer" href={`https://yamahack.com/search/${encodeURIComponent(selectedPeak?.name??selectedArea.name)}`}>在 YamaHack 查路线 ↗</a><a target="_blank" rel="noreferrer" href={`https://www.yamareco.com/modules/yamareco/search_record.php?key=${encodeURIComponent(selectedPeak?.name??selectedArea.name)}`}>在ヤマレコ核验 ↗</a></div>
         </div>}
       </section>
-      <footer className="planner-footer"><span>资料核验 2026.08.26</span><a href="https://www.pref.gunma.jp/page/1489.html" target="_blank" rel="noreferrer">コース定数说明 ↗</a><a href="/signout-with-chatgpt?return_to=/">退出</a></footer>
+      <footer className="planner-footer"><span>资料核验 2026.08.26</span><a href="https://www.pref.gunma.jp/page/1489.html" target="_blank" rel="noreferrer">コース定数说明 ↗</a>{deploymentMode === 'private' ? <a href="/signout-with-chatgpt?return_to=/">退出</a> : <span className="deployment-mode">PUBLIC</span>}</footer>
     </aside>
   </main>;
 }
