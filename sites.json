@@ -25,6 +25,29 @@
         "D1"
       ],
       "status": "active"
+    },
+    {
+      "id": "chufa-drive",
+      "title": "出发网盘",
+      "description": "使用出发网统一账号管理私人文件和分享",
+      "path": "sites/chufa-drive",
+      "stack": [
+        "React",
+        "TypeScript",
+        "Node.js"
+      ],
+      "status": "active"
+    },
+    {
+      "id": "chufa-identity",
+      "title": "出发网统一账户",
+      "description": "统一登录、密码管理和按服务授权",
+      "path": "sites/chufa-identity",
+      "stack": [
+        "Node.js",
+        "SQLite"
+      ],
+      "status": "active"
     }
   ]
 }

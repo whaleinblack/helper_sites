@@ -1,0 +1,41 @@
+[Unit]
+Description=Chufa Drive private file transfer (chufa.wang/drive)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=chufa-drive
+Group=chufa-drive
+UMask=0027
+WorkingDirectory=/srv/helper_sites/services/chufa-drive/current
+Environment=NODE_ENV=production
+Environment=DRIVE_HOST=127.0.0.1
+Environment=DRIVE_PORT=4191
+Environment=DRIVE_BASE=/drive
+Environment=DRIVE_DATA_DIR=/srv/helper_sites/services/chufa-drive/data
+Environment=DRIVE_STATE_DIR=/srv/helper_sites/services/chufa-drive/state
+Environment=DRIVE_STATIC_DIR=/srv/helper_sites/services/chufa-drive/current/dist
+Environment=DRIVE_TRUST_PROXY=1
+Environment=DRIVE_COOKIE_SECURE=1
+Environment=DRIVE_MIN_FREE_MB=1536
+Environment=DRIVE_REMEMBER_DAYS=7
+Environment=DRIVE_TZ=Asia/Tokyo
+ExecStart=/usr/bin/node /srv/helper_sites/services/chufa-drive/current/server/server.mjs
+Restart=on-failure
+RestartSec=3
+MemoryMax=384M
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+ProtectHome=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+ProtectSystem=strict
+# one writable mount so data <-> state/trash renames stay on the same mount (release dirs are root-owned)
+ReadWritePaths=/srv/helper_sites/services/chufa-drive
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+[Install]
+WantedBy=multi-user.target

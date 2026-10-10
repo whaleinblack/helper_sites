@@ -1,0 +1,27 @@
+[Unit]
+Description=Chufa unified account and scoped authorization
+After=network.target
+
+[Service]
+User=chufa-identity
+Group=chufa-identity
+WorkingDirectory=/srv/chufa-identity/current
+Environment=CHUFA_IDENTITY_CONFIG=/srv/chufa-identity/private/config.json
+ExecStart=/opt/travel-planner/node-v24/bin/node server/server.mjs
+Restart=on-failure
+RestartSec=3
+UMask=0007
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/srv/chufa-identity/shared
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryMax=256M
+
+[Install]
+WantedBy=multi-user.target
