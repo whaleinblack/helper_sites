@@ -18,7 +18,7 @@ async function fixture() {
  db.prepare('INSERT INTO users VALUES (?,?,?,?,?,?,0,NULL,NULL)').run('p','preview','preview@example.invalid','admin','active',await passwordHash('Preview-Test-123'));
  for(const scope of ['drive','status','photo-admin','live-admin'])db.prepare('INSERT INTO identity_grants VALUES (?,?)').run('p',scope);
  const store=new IdentityStore(path),key='t'.repeat(48);
- const server=createIdentityServer({store,clients:[{token:key,services:['drive','status','photo-admin']}],origin:'https://chufa.wang'});
+ const server=createIdentityServer({store,clients:[{token:key,services:['drive','status','photo-admin']},{token:'n'.repeat(48),services:['status'],requireOriginalMethod:true}],origin:'https://chufa.wang'});
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const base=`http://127.0.0.1:${server.address().port}`;
  return {db,store,key,base,close:async()=>{await new Promise(r=>server.close(r));store.close();db.close();rmSync(dir,{recursive:true,force:true});}};
@@ -40,6 +40,11 @@ test('central login grants, global logout, scoped internal clients and CSRF prot
   const headers={Cookie:cookie,Authorization:`Bearer ${f.key}`};
   assert.equal((await fetch(f.base+'/internal/session?service=drive',{headers})).status,200);
   assert.equal((await fetch(f.base+'/internal/check?service=status',{headers})).status,204);
+  const nginxHeaders={Cookie:cookie,Authorization:`Bearer ${'n'.repeat(48)}`};
+  assert.equal((await fetch(f.base+'/internal/check?service=status',{headers:nginxHeaders})).status,403,'original method is mandatory for proxy checks');
+  assert.equal((await fetch(f.base+'/internal/check?service=status',{headers:{...nginxHeaders,'X-Original-Method':'POST'}})).status,403);
+  assert.equal((await fetch(f.base+'/internal/check?service=status',{headers:{...nginxHeaders,'X-Original-Method':'POST',Origin:'https://chufa.wang'}})).status,204);
+  assert.equal((await fetch(f.base+'/internal/check?service=status',{headers:{...nginxHeaders,'X-Original-Method':'POST',Origin:'https://evil.invalid'}})).status,403);
   assert.equal((await fetch(f.base+'/internal/session?service=live-admin',{headers})).status,403,'client cannot choose an unassigned service');
   f.db.prepare("UPDATE users SET role='member' WHERE id='p'").run();
   assert.equal((await fetch(f.base+'/internal/check?service=status',{headers})).status,403);
