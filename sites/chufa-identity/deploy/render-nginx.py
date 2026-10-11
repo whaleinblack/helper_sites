@@ -7,7 +7,7 @@ def replace_auth(text, scope, expected):
     pattern=r'(?m)^(\s*)auth_basic\s+"[^"]+";\s*\n\s*auth_basic_user_file\s+[^;]+;'
     def replacement(m):
         i=m.group(1)
-        return f'{i}auth_basic off;\n{i}set $chufa_original_method $request_method;\n{i}auth_request /_chufa_identity/{scope};\n{i}error_page 401 = @chufa_signin;'
+        return f'{i}auth_basic off;\n{i}auth_request /_chufa_identity/{scope};\n{i}error_page 401 = @chufa_signin;'
     result,count=re.subn(pattern,replacement,text)
     if count!=expected: raise ValueError(f'Unexpected {scope} auth configuration ({count})')
     return result
@@ -54,7 +54,7 @@ location = /_chufa_identity/SCOPENAME {
     proxy_set_header Cookie $http_cookie;
     proxy_set_header Origin $http_origin;
     proxy_set_header Sec-Fetch-Site $http_sec_fetch_site;
-    proxy_set_header X-Original-Method $chufa_original_method;
+    proxy_set_header X-Original-Method $request_method;
     include /etc/nginx/snippets/chufa-identity-auth-secret.conf;
     proxy_connect_timeout 2s;
     proxy_read_timeout 3s;

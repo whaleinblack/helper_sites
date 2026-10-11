@@ -54,7 +54,7 @@ export function createIdentityServer({store,clients,origin='https://chufa.wang'}
       if(!input || typeof input!=='object' || Array.isArray(input)) return write(res,400,{code:'INVALID_JSON'});
       if(url.pathname.endsWith('/logout')) {store.logout(token);return write(res,200,{ok:true},{'Set-Cookie':cookie('',0)});}
       const ip=String(req.headers['x-real-ip']||req.socket.remoteAddress||'unknown').slice(0,64);
-      const account=String(input.identifier||store.session(token)?.user.id||'').toLowerCase().slice(0,320);
+      const account=String(input.identifier||store.session(token)?.user.id||'').trim().normalize('NFC').toLowerCase().slice(0,320);
       const keys=[`ip:${ip}`,`user:${account}`],stamp=Date.now();
       for(const [k,v] of failures) if(v.until<=stamp) failures.delete(k);
       if(keys.some(k=>(failures.get(k)?.count??0)>=8) || failures.size>5000) return write(res,429,{code:'RATE_LIMITED'});
