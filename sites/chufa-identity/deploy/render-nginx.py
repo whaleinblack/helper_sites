@@ -60,6 +60,23 @@ location = /_chufa_identity/SCOPENAME {
     proxy_read_timeout 3s;
 }
 '''.replace('SCOPENAME',scope)
+    # The existing Status login/switch-account form must remain able to create
+    # or inspect a session after logout. Only these fixed authentication routes
+    # are public; their backend still enforces method, Origin and rate limits.
+    for action in ('session','login','logout','password'):
+        common+='''
+location = /status/app-api/auth/ACTION {
+    auth_basic off;
+    auth_request off;
+    proxy_pass http://127.0.0.1:4174/dev/api/auth/ACTION;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Travel-Planner-Status-Viewer "";
+    client_max_body_size 16k;
+}
+'''.replace('ACTION',action)
     (out/'chufa-identity.conf').write_text(common)
 
 if __name__=='__main__':
