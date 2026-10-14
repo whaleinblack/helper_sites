@@ -7,7 +7,7 @@ Last reconciled: 2026-10-14 (Asia/Tokyo)
 - HTTP deploy implementation commit: `2c1d8bbc15d893ac0f2908a3b6c81f93044ee183` (continue from the latest `codex/osaka-mountain-picker` head).
 - chufa.wang infrastructure: [PR #23](https://github.com/whaleinblack/chufa.wang/pull/23) merged to `main` as `6a2cc83963d1b2d95f368d1c5d1622d6b14386bf`.
 - GitHub workflow `Deploy outdoor helper site` is active on the default branch.
-- GitHub Environment `outdoor` exists. Its Google Maps and independent Basic Auth secrets are intentionally still unset.
+- GitHub Environment `outdoor` exists. `OUTDOOR_GOOGLE_MAPS_API_KEY` was configured on 2026-10-14 without exposing its value; the independent Basic Auth username/password remain pending until bootstrap generates them.
 - Root bootstrap has not run; `127.0.0.1:4191` is therefore not expected to be listening yet.
 - Live `/mountain/` and port-4188 weather service remain healthy and unchanged. `/outdoor/` still falls through to the main chufa.wang app until bootstrap.
 
