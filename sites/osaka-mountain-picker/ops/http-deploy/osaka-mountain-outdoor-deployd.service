@@ -1,0 +1,23 @@
+[Unit]
+Description=Authenticated localhost HTTP deploy service for Osaka mountain picker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+Environment=OUTDOOR_DEPLOY_PORT=4191
+ExecStart=/usr/bin/node /usr/local/lib/osaka-mountain-outdoor/outdoor-deployd.mjs
+Restart=on-failure
+RestartSec=3
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/srv/helper_sites/releases/osaka-mountain-picker-http /srv/helper_sites/services/osaka-mountain-weather
+RestrictAddressFamilies=AF_UNIX AF_INET
+LockPersonality=true
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target
