@@ -14,7 +14,7 @@ createRoot(root).render(
   <StrictMode>
     <MountainPickerApp
       displayName=""
-      deploymentMode="protected"
+      deploymentMode="public"
       basePath={__MOUNTAIN_PUBLIC_BASE_PATH__}
       weatherEndpoint={__MOUNTAIN_WEATHER_ENDPOINT__}
     />

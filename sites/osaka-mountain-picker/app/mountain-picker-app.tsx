@@ -82,7 +82,7 @@ function WeatherGlyph({summary}:{summary:string}){
 
 type MountainPickerAppProps = {
   displayName: string;
-  deploymentMode?: 'private' | 'public' | 'protected';
+  deploymentMode?: 'private' | 'public';
   basePath?: string;
   weatherEndpoint?: string | null;
 };
@@ -179,7 +179,7 @@ export default function MountainPickerApp({
     <aside className="planner">
       <header className="app-header">
         <div className="brand-round">山</div><div className="brand-copy"><span>PICK A PEAK · OSAKA</span><b>下一座山</b></div>
-        <div className="user-chip" title={displayName || (deploymentMode==='protected'?'独立访问保护':'公开访问')}><i /> {deploymentMode === 'public' ? 'PUBLIC' : deploymentMode === 'protected' ? 'PROTECTED' : 'PRIVATE'}</div>
+        <div className="user-chip" title={displayName || '公开访问'}><i /> {deploymentMode === 'public' ? 'PUBLIC' : 'PRIVATE'}</div>
       </header>
       <nav className="phase-tabs" aria-label="规划阶段">
         {phases.map((item)=><button type="button" key={item.id} className={phase===item.id?'active':''} onClick={()=>goPhase(item.id)} disabled={item.id>2&&!selectedRoute}><span>0{item.id}</span><b>{item.ja}</b><small>{item.zh}</small></button>)}
@@ -247,7 +247,7 @@ export default function MountainPickerApp({
           <div className="external-actions stacked"><a target="_blank" rel="noreferrer" href={`https://www.google.com/maps/dir/?api=1&origin=Osaka+Station&destination=${encodeURIComponent(googleDestination)}`}>打开 Google Maps ↗</a><a target="_blank" rel="noreferrer" href={`https://yamap.com/mountains?q=${encodeURIComponent(selectedPeak?.name??selectedArea.name)}`}>在 YAMAP 核验 ↗</a><a target="_blank" rel="noreferrer" href={`https://yamahack.com/search/${encodeURIComponent(selectedPeak?.name??selectedArea.name)}`}>在 YamaHack 查路线 ↗</a><a target="_blank" rel="noreferrer" href={`https://www.yamareco.com/modules/yamareco/search_record.php?key=${encodeURIComponent(selectedPeak?.name??selectedArea.name)}`}>在ヤマレコ核验 ↗</a></div>
         </div>}
       </section>
-      <footer className="planner-footer"><span>资料核验 2026.08.26</span><a href="https://www.pref.gunma.jp/page/1489.html" target="_blank" rel="noreferrer">コース定数说明 ↗</a>{deploymentMode === 'private' ? <a href="/signout-with-chatgpt?return_to=/">退出</a> : <span className="deployment-mode">{deploymentMode === 'protected'?'PROTECTED':'PUBLIC'}</span>}</footer>
+      <footer className="planner-footer"><span>资料核验 2026.08.26</span><a href="https://www.pref.gunma.jp/page/1489.html" target="_blank" rel="noreferrer">コース定数说明 ↗</a>{deploymentMode === 'private' ? <a href="/signout-with-chatgpt?return_to=/">退出</a> : <span className="deployment-mode">PUBLIC</span>}</footer>
     </aside>
   </main>;
 }

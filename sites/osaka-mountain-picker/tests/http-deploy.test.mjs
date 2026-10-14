@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { validateDeployMetadata, validateOidcClaims, validateTarEntries } from '../ops/http-deploy/outdoor-deployd.mjs';
+import { validateDeployMetadata, validateOidcClaims, validateTarEntries } from '../ops/http-deploy/mountain-deployd.mjs';
 
 test('HTTP deploy metadata requires immutable hashes and bounded request ids', () => {
   const valid={commit:'a'.repeat(40),sha256:'b'.repeat(64),requestId:'deploy_123_safe'};
@@ -22,10 +22,10 @@ test('HTTP deploy accepts only the pinned GitHub workflow identity', () => {
   const now=2_000_000_000;
   const valid={
     iss:'https://token.actions.githubusercontent.com',
-    aud:'osaka-mountain-outdoor-deploy',
+    aud:'osaka-mountain-deploy',
     repository:'whaleinblack/chufa.wang',
     ref:'refs/heads/main',
-    workflow_ref:'whaleinblack/chufa.wang/.github/workflows/deploy-outdoor.yml@refs/heads/main',
+    workflow_ref:'whaleinblack/chufa.wang/.github/workflows/deploy-mountain.yml@refs/heads/main',
     event_name:'workflow_dispatch',
     exp:now+300,
     nbf:now-10,

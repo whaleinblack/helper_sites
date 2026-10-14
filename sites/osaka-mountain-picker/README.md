@@ -1,6 +1,6 @@
 # 下一座山 · 大阪発
 
-公开仓库中的 `.openai/hosting.json` 不保存实际 Sites 项目 ID。使用 Sites 发布时由站点所有者在本地或部署环境中填入对应项目 ID；GitHub Actions 的 `/outdoor` 发布流程不依赖该 ID。
+公开仓库中的 `.openai/hosting.json` 不保存实际 Sites 项目 ID。使用 Sites 发布时由站点所有者在本地或部署环境中填入对应项目 ID；GitHub Actions 的 `/mountain` 发布流程不依赖该 ID。
 
 以大阪站为统一起点的四季登山选择工具。它把山域、山峰、代表路线、交通、月度气候与 14 日天气放在同一张规划界面中，默认开启适合半年后恢复登山的低风险筛选。
 
@@ -57,8 +57,8 @@ npm run build:static
 使用服务端 `OPENWEATHER_API_KEY` 请求 OpenWeather，优先使用 One Call 3.0 的 8 日逐日预报，并在订阅不可用时降级到
 5 日／3 小时预报。成功响应缓存 24 小时，更新失败时最多使用 7 日内的旧缓存。Key 不进入静态文件或 Git。
 
-## `/outdoor` HTTP 部署与移交
+## `/mountain` HTTP 部署与移交
 
-目标独立入口为 `https://chufa.wang/outdoor/`。构建通过 `MOUNTAIN_PUBLIC_BASE_PATH=/outdoor/` 和 `MOUNTAIN_WEATHER_ENDPOINT=/outdoor/api/weather` 生成，源码仍只保存在 `helper_sites`。日常发布使用 GitHub `workflow_dispatch`、短时 OIDC、localhost HTTP deploy service、校验和与原子 symlink，不依赖客户端 SSH。
+正式入口沿用现有的 `https://chufa.wang/mountain/`。构建通过 `MOUNTAIN_PUBLIC_BASE_PATH=/mountain/` 和 `MOUNTAIN_WEATHER_ENDPOINT=/mountain/api/weather` 生成，源码仍只保存在 `helper_sites`。日常发布使用 GitHub `workflow_dispatch`、短时 OIDC、localhost HTTP deploy service、校验和与原子 symlink，不依赖客户端 SSH。
 
 项目状态与已知限制见 [HANDOFF.md](HANDOFF.md)；一次性安装、GitHub Environment、发布和回滚命令见 [ops/http-deploy/README.md](ops/http-deploy/README.md)。首次建立 root systemd 服务和 Nginx location 仍需在 Lightsail 浏览器控制台执行一次。

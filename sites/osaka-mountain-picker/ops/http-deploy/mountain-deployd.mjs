@@ -7,26 +7,26 @@ import { basename, join, posix } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = process.env.OUTDOOR_DEPLOY_ROOT || '/srv/helper_sites/releases/osaka-mountain-picker-http';
+const ROOT = process.env.MOUNTAIN_DEPLOY_ROOT || '/srv/helper_sites/releases/osaka-mountain-picker-http';
 const RELEASES = join(ROOT, 'releases');
 const INCOMING = join(ROOT, 'incoming');
 const CURRENT = join(ROOT, 'current');
 const STATE_FILE = join(ROOT, 'state.json');
-const WEATHER_CURRENT = process.env.OUTDOOR_WEATHER_CURRENT || '/srv/helper_sites/services/osaka-mountain-weather/current';
-const WEATHER_SERVICE = process.env.OUTDOOR_WEATHER_SERVICE || 'helper-sites-osaka-mountain-weather.service';
-const WEATHER_HEALTH_URL = process.env.OUTDOOR_WEATHER_HEALTH_URL || 'http://127.0.0.1:4188/health';
-const PORT = Number.parseInt(process.env.OUTDOOR_DEPLOY_PORT || '4191', 10);
-const MAX_BYTES = Number.parseInt(process.env.OUTDOOR_DEPLOY_MAX_BYTES || String(256 * 1024 * 1024), 10);
-const RELEASE_RE = /^outdoor-\d{8}T\d{6}Z-[0-9a-f]{12}$/;
+const WEATHER_CURRENT = process.env.MOUNTAIN_WEATHER_CURRENT || '/srv/helper_sites/services/osaka-mountain-weather/current';
+const WEATHER_SERVICE = process.env.MOUNTAIN_WEATHER_SERVICE || 'helper-sites-osaka-mountain-weather.service';
+const WEATHER_HEALTH_URL = process.env.MOUNTAIN_WEATHER_HEALTH_URL || 'http://127.0.0.1:4188/health';
+const PORT = Number.parseInt(process.env.MOUNTAIN_DEPLOY_PORT || '4191', 10);
+const MAX_BYTES = Number.parseInt(process.env.MOUNTAIN_DEPLOY_MAX_BYTES || String(256 * 1024 * 1024), 10);
+const RELEASE_RE = /^mountain-http-\d{8}T\d{6}Z-[0-9a-f]{12}$/;
 const COMMIT_RE = /^[0-9a-f]{40}$/;
 const SHA256_RE = /^[0-9a-f]{64}$/;
 const REQUEST_RE = /^[a-z0-9][a-z0-9_-]{0,79}$/;
 const OIDC_ISSUER = 'https://token.actions.githubusercontent.com';
 const OIDC_JWKS_URL = 'https://token.actions.githubusercontent.com/.well-known/jwks';
-const OIDC_AUDIENCE = process.env.OUTDOOR_OIDC_AUDIENCE || 'osaka-mountain-outdoor-deploy';
-const OIDC_REPOSITORY = process.env.OUTDOOR_OIDC_REPOSITORY || 'whaleinblack/chufa.wang';
-const OIDC_WORKFLOW = process.env.OUTDOOR_OIDC_WORKFLOW || 'deploy-outdoor.yml';
-const OIDC_REF = process.env.OUTDOOR_OIDC_REF || 'refs/heads/main';
+const OIDC_AUDIENCE = process.env.MOUNTAIN_OIDC_AUDIENCE || 'osaka-mountain-deploy';
+const OIDC_REPOSITORY = process.env.MOUNTAIN_OIDC_REPOSITORY || 'whaleinblack/chufa.wang';
+const OIDC_WORKFLOW = process.env.MOUNTAIN_OIDC_WORKFLOW || 'deploy-mountain.yml';
+const OIDC_REF = process.env.MOUNTAIN_OIDC_REF || 'refs/heads/main';
 let deploymentActive = false;
 let jwksCache = { expiresAt: 0, keys: [] };
 
@@ -211,13 +211,13 @@ async function releaseManifest(path) {
 async function validateExtractedRelease(path) {
   const sitePath = join(path, 'site');
   const html = await readFile(join(sitePath, 'index.html'), 'utf8');
-  if (!html.includes('下一座山') || !html.includes('/outdoor/')) {
-    throw new Error('static index does not target /outdoor');
+  if (!html.includes('下一座山') || !html.includes('/mountain/')) {
+    throw new Error('static index does not target /mountain');
   }
-  const referenced = [...html.matchAll(/(?:src|href)=["'](\/outdoor\/[^"']+)["']/gu)]
-    .map((match) => match[1].slice('/outdoor/'.length))
+  const referenced = [...html.matchAll(/(?:src|href)=["'](\/mountain\/[^"']+)["']/gu)]
+    .map((match) => match[1].slice('/mountain/'.length))
     .filter((value) => value && !value.startsWith('http'));
-  if (!referenced.length) throw new Error('static index has no /outdoor assets');
+  if (!referenced.length) throw new Error('static index has no /mountain assets');
   for (const relative of referenced) {
     const decoded = decodeURIComponent(relative.split(/[?#]/u)[0]);
     if (decoded.includes('..') || decoded.includes('\\') || !existsSync(join(sitePath, decoded))) {
@@ -257,7 +257,7 @@ async function deploy(request, metadata) {
   const archive = join(INCOMING, `${metadata.requestId}.tar.gz`);
   const staging = join(RELEASES, `.staging-${metadata.requestId}`);
   const stamp = new Date().toISOString().replace(/[-:]/gu, '').replace(/\.\d{3}Z$/u, 'Z');
-  const releaseId = `outdoor-${stamp}-${metadata.commit.slice(0, 12)}`;
+  const releaseId = `mountain-http-${stamp}-${metadata.commit.slice(0, 12)}`;
   const releasePath = join(RELEASES, releaseId);
   await rm(archive, { force: true });
   await rm(staging, { recursive: true, force: true });
@@ -405,6 +405,6 @@ const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.arg
 if (isMain) {
   const server = createDeployServer();
   server.listen(PORT, '127.0.0.1', () => {
-    console.log(`outdoor-deployd listening on http://127.0.0.1:${PORT}`);
+    console.log(`mountain-deployd listening on http://127.0.0.1:${PORT}`);
   });
 }

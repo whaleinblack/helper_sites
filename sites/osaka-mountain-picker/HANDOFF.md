@@ -5,11 +5,10 @@ Last reconciled: 2026-10-14 (Asia/Tokyo)
 ## Handoff checkpoint
 
 - HTTP deploy implementation commit: `2c1d8bbc15d893ac0f2908a3b6c81f93044ee183` (continue from the latest `codex/osaka-mountain-picker` head).
-- chufa.wang infrastructure: [PR #23](https://github.com/whaleinblack/chufa.wang/pull/23) merged to `main` as `6a2cc83963d1b2d95f368d1c5d1622d6b14386bf`.
-- GitHub workflow `Deploy outdoor helper site` is active on the default branch.
-- GitHub Environment `outdoor` exists. `OUTDOOR_GOOGLE_MAPS_API_KEY` was configured on 2026-10-14 without exposing its value; the independent Basic Auth username/password remain pending until bootstrap generates them.
+- PR #23 introduced the initial `/outdoor` workflow but was superseded after server inspection proved `/mountain` is already the canonical live deployment. A follow-up infrastructure PR replaces it with `deploy-mountain.yml`.
+- GitHub Environment `outdoor` is retained only as the existing secret container. `OUTDOOR_GOOGLE_MAPS_API_KEY` was configured on 2026-10-14 without exposing its value; no Basic Auth secrets are required.
 - Root bootstrap has not run; `127.0.0.1:4191` is therefore not expected to be listening yet.
-- Live `/mountain/` and port-4188 weather service remain healthy and unchanged. `/outdoor/` still falls through to the main chufa.wang app until bootstrap.
+- Live `/mountain/` and port-4188 weather service are healthy. Bootstrap converts their manual-copy layout to atomic HTTP-managed releases without changing the URL.
 
 ## Product state
 
@@ -17,9 +16,7 @@ The project is a four-season mountain picker centered on Osaka Station. The curr
 
 Current hosted Site: `https://osaka-mountain-picker.whaleinblack.chatgpt.site/` (owner-private Sites deployment).
 
-Target independent mount: `https://chufa.wang/outdoor/`.
-
-Existing legacy/public mount: `https://chufa.wang/mountain/` with its live filesystem-cached weather API. Leave it in place during `/outdoor` acceptance so rollback does not depend on the new mount.
+Canonical public mount: `https://chufa.wang/mountain/` with its live filesystem-cached weather API.
 
 The target is intentionally not linked from the chufa.wang main product. Its source remains in `whaleinblack/helper_sites`; only the central Nginx include and a small deployment workflow belong in `whaleinblack/chufa.wang`.
 
@@ -44,20 +41,20 @@ npm run lint
 npm run build
 ```
 
-Static `/outdoor` verification uses:
+Static `/mountain` verification uses:
 
 ```bash
-MOUNTAIN_PUBLIC_BASE_PATH=/outdoor/ \
-MOUNTAIN_WEATHER_ENDPOINT=/outdoor/api/weather \
+MOUNTAIN_PUBLIC_BASE_PATH=/mountain/ \
+MOUNTAIN_WEATHER_ENDPOINT=/mountain/api/weather \
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY='<restricted browser key>' \
 npm run build:static
 ```
 
 Expected checks:
 
-- `dist-static/index.html` and every JS/CSS reference remain under `/outdoor/`;
-- the bundle references `/outdoor/api/weather` and contains no server secret;
-- `/outdoor/api/weather?rangeId=rokko` returns normalized JSON through the existing port-4188 service;
+- `dist-static/index.html` and every JS/CSS reference remain under `/mountain/`;
+- the bundle references `/mountain/api/weather` and contains no server secret;
+- `/mountain/api/weather?rangeId=rokko` returns normalized JSON through the existing port-4188 service;
 - missing OpenWeather configuration degrades to a visible `unconfigured` response rather than a blank page.
 
 ## Deployment handoff
@@ -73,7 +70,7 @@ Security properties:
 - artifacts require an exact helper commit, SHA-256, bounded size, safe tar paths and no links;
 - releases are immutable and switched atomically;
 - failed health checks restore the previous release;
-- `/outdoor` uses an independent Basic Auth file;
+- current public `/mountain` access remains unchanged;
 - OpenWeather remains server-only and Google Maps uses a referrer/API-restricted browser key.
 
 ## Data and API boundaries
@@ -89,18 +86,18 @@ Security properties:
 
 1. Expand priority peaks from one representative index to verified standard, transit-friendly and traverse routes using official or ODbL-compatible geometry.
 2. Replace legacy `google.maps.Marker` with `AdvancedMarkerElement` when updating map rendering.
-3. Review the current Google Maps browser key restriction after the first `/outdoor` deployment.
+3. Review the current Google Maps browser key restriction after the first HTTP-managed `/mountain` deployment.
 4. Re-run data-source dates; the visible catalog verification stamp is still 2026-08-26.
 5. Keep snow-season difficulty separate from the normal route constant. The UI uses `初雪・移行期`, `积雪期`, `严冬期` and `融雪・残雪期`, but it does not claim avalanche or winter-route grading.
 
 ## Operational acceptance checklist
 
 - helper_sites commit is a full SHA on `codex/osaka-mountain-picker`;
-- tests, lint and standalone build pass on the self-hosted runner;
+- tests, lint and static build pass on the self-hosted runner;
 - deployd `/healthz` succeeds before artifact upload;
 - Action OIDC claims match the pinned workflow on `main`;
 - the deploy service validates every static asset and the restarted weather service health succeeds;
-- public Basic Auth request returns the mountain page and prefixed assets;
+- public `/mountain/` returns the new page and prefixed assets;
 - Google Maps loads under the chufa.wang referrer restriction;
 - weather returns either current data or a visible degraded status;
 - current and previous release IDs are recorded;

@@ -1,6 +1,18 @@
-# `/outdoor` HTTP-only deployment
+# `/mountain` HTTP-only deployment
 
-This directory provides the reviewed path for publishing the standalone mountain picker at `https://chufa.wang/outdoor/` without client-side SSH.
+This directory upgrades the existing `https://chufa.wang/mountain/` deployment from manual file copies to an auditable HTTPS/OIDC release flow. It does not create `/outdoor` or change the public URL.
+
+## Verified existing service
+
+Server inspection on 2026-10-14 confirmed:
+
+- `/mountain/` is served by Nginx from `/srv/helper_sites/sites/osaka-mountain-picker/`;
+- the live static index matches release `20260827-mountain-v12-map-order`;
+- `/mountain/api/weather` proxies to `127.0.0.1:4188/weather`;
+- `helper-sites-osaka-mountain-weather.service` is active and configured;
+- the weather service currently points to `20260826-mountain-v5-weather-cards/server` and has 14 cached ranges.
+
+The bootstrap seeds an immutable release from these exact live files before changing the Nginx alias, so the public page does not change during installation and a rollback point exists immediately.
 
 ## Architecture
 
@@ -8,24 +20,22 @@ This directory provides the reviewed path for publishing the standalone mountain
 GitHub workflow_dispatch over HTTPS
   → repository-scoped self-hosted runner on Lightsail
   → checkout an exact helper_sites commit
-  → test and build a /outdoor static artifact plus the weather service
+  → test and build /mountain static files plus weather-api.mjs
   → request a short-lived GitHub Actions OIDC token
   → POST the checksummed tarball to 127.0.0.1:4191
-  → root-owned deployd verifies OIDC, paths, links and SHA-256
-  → immutable release + atomic static/weather symlinks + weather health check
-  → localhost and public HTTP verification
+  → root-owned deployd verifies OIDC, SHA-256, size and tar paths
+  → immutable static/weather release + atomic symlinks
+  → weather restart/health + public /mountain HTTP verification
 ```
 
-The deploy endpoint is bound to localhost. It accepts only a GitHub-signed OIDC identity for `whaleinblack/chufa.wang`, the `deploy-outdoor.yml` workflow on `refs/heads/main`, and a manual `workflow_dispatch` event. There is no long-lived deployment token.
-
-The public page is independently protected by `/etc/nginx/.htpasswd_chufa_outdoor`; it does not use the main site's account database or cookie. Nginx serves static files directly and proxies only `/outdoor/api/weather` to the existing localhost weather service on port 4188.
+The deploy API is localhost-only. It accepts only the GitHub-signed identity of `whaleinblack/chufa.wang/.github/workflows/deploy-mountain.yml` on `refs/heads/main`, with audience `osaka-mountain-deploy` and event `workflow_dispatch`. No deploy token or client SSH is used after bootstrap.
 
 ## One-time bootstrap
 
-The initial root service and Nginx location cannot be created by an unprivileged Action. Run this once in the AWS Lightsail browser console. It uses GitHub HTTPS, not SSH:
+Run once in the AWS Lightsail browser terminal. This uses GitHub HTTPS, not a client SSH connection:
 
 ```bash
-export HELPER_SHA='<full commit from codex/osaka-mountain-picker>'
+export HELPER_SHA='<latest full codex/osaka-mountain-picker commit>'
 cd /tmp
 BOOTSTRAP_DIR="$(mktemp -d)"
 git clone --filter=blob:none --no-checkout \
@@ -34,40 +44,32 @@ cd "$BOOTSTRAP_DIR"
 git fetch --no-tags origin codex/osaka-mountain-picker
 git checkout --detach "$HELPER_SHA"
 test "$(git rev-parse HEAD)" = "$HELPER_SHA"
-sudo bash sites/osaka-mountain-picker/ops/http-deploy/install-outdoor-http-deploy.sh \
+sudo bash sites/osaka-mountain-picker/ops/http-deploy/install-mountain-http-deploy.sh \
   sites/osaka-mountain-picker/ops/http-deploy
 ```
 
-Before running the installer, confirm `HELPER_SHA` against the branch head shown by GitHub. The installer:
+The installer:
 
-- creates root-owned immutable release and incoming directories readable by Nginx;
-- installs the root-owned localhost deployment service;
-- installs the reviewed weather service unit and localhost deploy service;
-- adds the reviewed `/outdoor` Nginx include before the main catch-all route;
-- validates Nginx and restores its timestamped backup on failure;
-- creates an independent Basic Auth password and prints it once.
+- copies the current `/mountain` page and current weather code into a bootstrap release;
+- atomically creates `/srv/helper_sites/releases/osaka-mountain-picker-http/current`;
+- changes only the existing `/mountain` alias in `/etc/nginx/snippets/helper-sites.conf`;
+- backs up and validates Nginx before reload;
+- installs the localhost OIDC deploy service and reviewed weather unit;
+- verifies deployd, weather health and the unchanged public page.
 
-OpenWeather continues to come from the existing root-managed provider environment at `/srv/travel_planner/shared/secrets/providers/.env`; do not copy it into GitHub or the static bundle.
+The old static directory, historical releases, cache and OpenWeather provider environment remain untouched.
 
-## GitHub environment
+## GitHub control plane
 
-Create the `outdoor` Environment in `whaleinblack/chufa.wang` and add these secrets:
+The existing GitHub Environment is still named `outdoor` for compatibility and already contains `OUTDOOR_GOOGLE_MAPS_API_KEY`. The workflow name and destination are now `mountain`; no Basic Auth secrets are required because current public access is preserved.
 
-- `OUTDOOR_GOOGLE_MAPS_API_KEY`: browser key restricted to `https://chufa.wang/outdoor/*` and the Maps JavaScript API;
-- `OUTDOOR_BASIC_AUTH_USERNAME`: normally `outdoor`;
-- `OUTDOOR_BASIC_AUTH_PASSWORD`: the one-time value printed by the installer.
-
-No deployment token is required; the workflow uses GitHub OIDC.
-
-The deployment workflow must exist on the repository's default `main` branch. It contains no mountain-site source; it only checks out an immutable `helper_sites` revision and sends the verified artifact to localhost.
+The workflow must be present on the default `main` branch of `whaleinblack/chufa.wang`.
 
 ## Normal HTTPS deployment
 
-From any authenticated GitHub CLI or from the Actions UI:
-
 ```bash
 HELPER_SHA="$(gh api repos/whaleinblack/helper_sites/git/ref/heads/codex/osaka-mountain-picker --jq .object.sha)"
-gh workflow run deploy-outdoor.yml \
+gh workflow run deploy-mountain.yml \
   -R whaleinblack/chufa.wang \
   --ref main \
   -f action=deploy \
@@ -75,31 +77,30 @@ gh workflow run deploy-outdoor.yml \
 gh run watch -R whaleinblack/chufa.wang
 ```
 
-Status and rollback are also HTTPS-only:
+Status and rollback:
 
 ```bash
-gh workflow run deploy-outdoor.yml -R whaleinblack/chufa.wang --ref main -f action=status
-gh workflow run deploy-outdoor.yml -R whaleinblack/chufa.wang --ref main -f action=rollback
+gh workflow run deploy-mountain.yml -R whaleinblack/chufa.wang --ref main -f action=status
+gh workflow run deploy-mountain.yml -R whaleinblack/chufa.wang --ref main -f action=rollback
 ```
 
 ## Server layout
 
 | Purpose | Path / port |
 | --- | --- |
-| Immutable releases | `/srv/helper_sites/releases/osaka-mountain-picker-http/releases` |
-| Active static/weather release | `/srv/helper_sites/releases/osaka-mountain-picker-http/current` |
+| HTTP-managed releases | `/srv/helper_sites/releases/osaka-mountain-picker-http/releases` |
+| Active combined release | `/srv/helper_sites/releases/osaka-mountain-picker-http/current` |
+| Pre-HTTP historical releases | `/srv/helper_sites/releases/osaka-mountain-picker` |
+| Previous manual live directory | `/srv/helper_sites/sites/osaka-mountain-picker` |
 | Weather service current link | `/srv/helper_sites/services/osaka-mountain-weather/current` |
 | Weather cache | `/srv/helper_sites/services/osaka-mountain-weather/cache/weather.json` |
-| Deploy state | `/srv/helper_sites/releases/osaka-mountain-picker-http/state.json` |
 | Weather API | `127.0.0.1:4188` |
 | OIDC deploy API | `127.0.0.1:4191` |
-| Public URL | `https://chufa.wang/outdoor/` |
-
-The deployment service keeps the current and previous releases protected from pruning, preserves failed candidates for diagnosis, and restores the previous symlink if application health fails.
+| Public URL | `https://chufa.wang/mountain/` |
 
 ## Recovery
 
-- Use the workflow's `rollback` operation first.
-- If the deployment service is unhealthy, use the Lightsail browser console to inspect `journalctl -u osaka-mountain-outdoor-deployd` and `journalctl -u helper-sites-osaka-mountain-weather`.
-- The installer prints the exact Nginx backup path. Restore that file and run `nginx -t` before reloading Nginx if the mount itself must be removed.
-- Never copy a local `.env`, Sites project ID, D1 database, or ChatGPT authentication header into a release.
+- Prefer the workflow's `rollback` action; it swaps both static and weather releases.
+- Inspect `journalctl -u osaka-mountain-deployd` and `journalctl -u helper-sites-osaka-mountain-weather` from the Lightsail browser terminal when needed.
+- The installer prints the Nginx backup path. Restore it and run `nginx -t` before reload only if the HTTP-managed alias itself must be removed.
+- Never commit or package `.env`, API keys, cache data, Sites identity or D1 state.
