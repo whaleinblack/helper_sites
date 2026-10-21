@@ -39,6 +39,9 @@ export class IdentityStore {
       action TEXT NOT NULL CHECK(action IN ('registered','member_created','service_access_changed')),
       details_json TEXT NOT NULL,created_at TEXT NOT NULL);
       CREATE INDEX IF NOT EXISTS idx_identity_account_events_target ON identity_account_events(target_user_id,created_at);`);
+    this.db.exec(`CREATE TABLE IF NOT EXISTS identity_profile_events (
+      id TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id),
+      changed_fields_json TEXT NOT NULL,created_at TEXT NOT NULL);`);
   }
   publicUser(row) {
     return {id:row.id,username:row.username,email:row.email,role:row.role,
@@ -64,6 +67,48 @@ export class IdentityStore {
       JOIN identity_grants g ON g.user_id=u.id WHERE u.${field}=? COLLATE NOCASE
       AND u.status='active' AND u.password_change_required=0 AND g.service=?`).get(value,service);
     return row?{id:row.id,username:row.username,role:row.role,passwordChangeRequired:false,grants:[service]}:null;
+  }
+
+  ownProfile(token) {
+    const session=this.session(token);
+    if(!session)throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED',status:401});
+    const row=this.db.prepare('SELECT * FROM users WHERE id=?').get(session.user.id);
+    let profile={};try{const parsed=JSON.parse(row.profile_json||'{}');if(parsed&&typeof parsed==='object'&&!Array.isArray(parsed))profile=parsed;}catch{}
+    return {id:row.id,username:row.username,email:row.email,displayName:typeof profile.displayName==='string'?profile.displayName:row.username,emailVerified:!!row.email_verified_at,updatedAt:row.updated_at};
+  }
+
+  async updateOwnProfile(token,input) {
+    const reject=(code,status=400)=>{throw Object.assign(Error(code),{code,status});};
+    if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(key=>!['displayName','email','expectedUpdatedAt','currentPassword'].includes(key)))reject('PROFILE_INVALID');
+    if(typeof input.displayName!=='string'||typeof input.email!=='string'||typeof input.expectedUpdatedAt!=='string'||(input.currentPassword!==undefined&&typeof input.currentPassword!=='string'))reject('PROFILE_INVALID');
+    const displayName=input.displayName.normalize('NFC').trim(),email=input.email.normalize('NFC').trim().toLowerCase();
+    if(!displayName||[...displayName].length>80||/[\u0000-\u001f\u007f]/.test(displayName))reject('PROFILE_INVALID');
+    if(email.length>254||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))reject('EMAIL_INVALID');
+    const session=this.session(token);if(!session)reject('AUTH_REQUIRED',401);
+    if(session.user.passwordChangeRequired)reject('PASSWORD_CHANGE_REQUIRED',403);
+    const before=this.db.prepare('SELECT * FROM users WHERE id=?').get(session.user.id);
+    const emailChanged=email!==String(before.email).toLowerCase();
+    if(emailChanged){
+      if(!input.currentPassword)reject('PROFILE_PASSWORD_REQUIRED');
+      if(!await verifyPassword(input.currentPassword,before.password_hash))reject('BAD_CREDENTIALS',401);
+    }
+    this.db.exec('BEGIN IMMEDIATE');
+    try{
+      const currentSession=this.session(token);if(!currentSession||currentSession.user.id!==before.id)reject('AUTH_REQUIRED',401);
+      const current=this.db.prepare('SELECT * FROM users WHERE id=?').get(before.id);
+      if(current.password_change_required)reject('PASSWORD_CHANGE_REQUIRED',403);
+      if(current.updated_at!==input.expectedUpdatedAt)reject('PROFILE_STALE',409);
+      if(emailChanged&&current.password_hash!==before.password_hash)reject('BAD_CREDENTIALS',401);
+      if(this.db.prepare('SELECT 1 FROM users WHERE email=? COLLATE NOCASE AND id<>?').get(email,current.id))reject('ACCOUNT_EXISTS',409);
+      let profile={};try{const parsed=JSON.parse(current.profile_json||'{}');if(parsed&&typeof parsed==='object'&&!Array.isArray(parsed))profile=parsed;}catch{}
+      const changed=[];if((profile.displayName??current.username)!==displayName)changed.push('displayName');if(emailChanged)changed.push('email');
+      if(changed.length){
+        const stamp=new Date(Math.max(Date.now(),(Date.parse(current.updated_at)||0)+1)).toISOString();
+        this.db.prepare('UPDATE users SET profile_json=?,email=?,email_verified_at=?,updated_at=? WHERE id=?').run(JSON.stringify({...profile,displayName}),email,emailChanged?null:current.email_verified_at,stamp,current.id);
+        this.db.prepare('INSERT INTO identity_profile_events(id,user_id,changed_fields_json,created_at) VALUES(?,?,?,?)').run(id('profile'),current.id,JSON.stringify(changed),stamp);
+      }
+      const result=this.ownProfile(token);this.db.exec('COMMIT');return result;
+    }catch(error){this.db.exec('ROLLBACK');throw error;}
   }
 
   async register(input) {

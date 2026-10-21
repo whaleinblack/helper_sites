@@ -40,6 +40,12 @@ test('service grant, administrative role and forced password change all gate acc
   assert.deepEqual(admin.redirects,['/status/users/']);
 });
 
+test('root homepage return is available to any signed-in account without granting travel access',()=>{
+  const home=portal('/');home.enter({...member,grants:[]});assert.deepEqual(home.redirects,['/']);
+  const travel=portal('/travel/');travel.enter({...member,grants:[]});assert.deepEqual(travel.redirects,[]);
+  const forced=portal('/');forced.enter({...member,grants:[],passwordChangeRequired:true});assert.deepEqual(forced.redirects,[]);
+});
+
 test('external, credential-page, traversal and unknown return targets stay on the account portal',()=>{
   for(const path of ['//evil.invalid/','https://evil.invalid/','/\\evil.invalid/','/account/?mode=register','/travel/../account/','/unknown/']){
     const p=portal(path);p.enter(member);assert.deepEqual(p.redirects,[],path);

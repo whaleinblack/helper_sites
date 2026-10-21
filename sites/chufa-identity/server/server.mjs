@@ -53,7 +53,11 @@ export function createIdentityServer({store,clients,origin='https://chufa.wang'}
         return res.end(readFileSync(new URL(`../public/${file}`,import.meta.url)));
       }
       if(req.method==='GET' && url.pathname==='/account/api/session') return write(res,200,{authenticated:!!store.session(token),user:store.session(token)?.user??null,registrationAvailable:true});
-      if(req.method!=='POST' || !['/account/api/login','/account/api/register','/account/api/logout','/account/api/password'].includes(url.pathname)) return write(res,404,{code:'NOT_FOUND'});
+      const profileRoute=url.pathname==='/account/api/profile';
+      if(profileRoute&&url.search)return write(res,400,{code:'PROFILE_INVALID'});
+      if(profileRoute&&req.method==='GET')return write(res,200,{user:store.ownProfile(token)});
+      if(profileRoute&&!['GET','PATCH'].includes(req.method))return write(res,405,{code:'METHOD'},{Allow:'GET, PATCH'});
+      if(!(profileRoute&&req.method==='PATCH')&&(req.method!=='POST' || !['/account/api/login','/account/api/register','/account/api/logout','/account/api/password'].includes(url.pathname))) return write(res,404,{code:'NOT_FOUND'});
       if(req.headers.origin!==origin || req.headers['sec-fetch-site']==='cross-site' || !req.headers['content-type']?.startsWith('application/json')) return write(res,403,{code:'INVALID_ORIGIN'});
       let body='',bytes=0;
       for await(const chunk of req) {bytes+=chunk.length;if(bytes>8192){write(res,413,{code:'BODY_TOO_LARGE'});return;}body+=chunk;}
@@ -78,6 +82,7 @@ export function createIdentityServer({store,clients,origin='https://chufa.wang'}
       let registered=false;
       inFlight++;
       try {
+      if(profileRoute){const user=await store.updateOwnProfile(token,input);keys.forEach(k=>failures.delete(k));return write(res,200,{user});}
       if(url.pathname.endsWith('/register')) {
         const result=await store.register(input);
         registered=true;
@@ -93,7 +98,7 @@ export function createIdentityServer({store,clients,origin='https://chufa.wang'}
       keys.forEach(k=>failures.delete(k));
       return write(res,200,{authenticated:true,user:result.user},{'Set-Cookie':cookie(result.token)});
       } finally {inFlight--;if(signup&&!registered)signup.count--;}
-    }catch(error) {if(!res.headersSent){const known=['REGISTRATION_INVALID','USERNAME_INVALID','EMAIL_INVALID','PASSWORD_WEAK','ACCOUNT_EXISTS'].includes(error?.code);write(res,known?error.status:503,{code:known?error.code:'IDENTITY_UNAVAILABLE'});}else res.destroy();}
+    }catch(error) {if(!res.headersSent){const known=['REGISTRATION_INVALID','USERNAME_INVALID','EMAIL_INVALID','PASSWORD_WEAK','ACCOUNT_EXISTS','AUTH_REQUIRED','PASSWORD_CHANGE_REQUIRED','PROFILE_INVALID','PROFILE_STALE','PROFILE_PASSWORD_REQUIRED','BAD_CREDENTIALS'].includes(error?.code);write(res,known?error.status:503,{code:known?error.code:'IDENTITY_UNAVAILABLE'});}else res.destroy();}
   });
 }
 if(process.argv[1]===fileURLToPath(import.meta.url)) {

@@ -1,5 +1,5 @@
 const $=id=>document.getElementById(id);
-const routes={agents:['Agent 协作平台','/agents/'],production:['旅行规划','/'],development:['开发站旅行规划','/dev/'],drive:['我的网盘','/drive/'],status:['运维后台','/status/'], 'photo-admin':['摄影管理','/photo/status/'],'live-admin':['直播管理','/live/status/']};
+const routes={agents:['Agent 协作平台','/agents/'],production:['旅行规划','/travel/'],development:['开发站旅行规划','/travel_dev/'],drive:['我的网盘','/drive/'],status:['运维后台','/status/'], 'photo-admin':['摄影管理','/photo/status/'],'live-admin':['直播管理','/live/status/']};
 const adminOnly=new Set(['status','photo-admin','live-admin']);
 // Return-to paths by service; the first (most specific) prefix wins, `/` itself is the travel planner.
 const returnPrefixes=[['/travel_dev/status/','status'],['/dev/status/','status'],['/photo/status/','photo-admin'],['/live/status/','live-admin'],['/status/','status'],['/agents/','agents'],['/drive/','drive'],['/travel_dev/','development'],['/travel/','production'],['/dev/','development']];
@@ -15,11 +15,11 @@ function setMode(mode){const register=mode==='register'&&registrationAvailable;$
 // Only same-origin service paths are honoured; anything else stays on this page.
 function requestedReturn(){const next=params.get('next');if(!next)return null;if(!next.startsWith('/')||next.startsWith('//')||/[\\\u0000-\u001f]/.test(next))return {invalid:true};
   const target=new URL(next,location.origin);if(target.origin!==location.origin||target.pathname.startsWith('/account/'))return {invalid:true};
-  const scope=target.pathname==='/'?'production':returnPrefixes.find(([base])=>target.pathname.startsWith(base))?.[1];return scope?{scope,href:target.pathname+target.search+target.hash}:{invalid:true};}
+  const scope=target.pathname==='/'?'home':returnPrefixes.find(([base])=>target.pathname.startsWith(base))?.[1];return scope?{scope,href:target.pathname+target.search+target.hash}:{invalid:true};}
 // Never bounce back to a service the account cannot use: that service would send the visitor here again.
 function returnToService(){const target=requestedReturn();if(!target||!current||current.passwordChangeRequired)return;
   if(target.invalid){$('message').textContent='返回地址不属于出发网服务，已停留在账户页面。';return;}
-  if(canUse(current,target.scope)){location.assign(target.href);return;}
+  if(target.scope==='home'||canUse(current,target.scope)){location.assign(target.href);return;}
   $('message').textContent=`当前账号尚未开通「${routes[target.scope][0]}」，下方列出了可以进入的服务。如需开通，请联系管理员。`;}
 function registrationProblem(input){if(!/^[A-Za-z0-9][A-Za-z0-9._-]{2,31}$/.test(input.username.trim()))return errors.USERNAME_INVALID;if(input.email.trim().length>254||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(input.email.trim()))return errors.EMAIL_INVALID;
   const p=input.password;if([...p].length<8||new TextEncoder().encode(p).length>256||[/[a-z]/,/[A-Z]/,/[0-9]/,/[^A-Za-z0-9]/].filter(x=>x.test(p)).length<3)return errors.PASSWORD_WEAK;return null;}

@@ -11,6 +11,20 @@ Nginx 客户端还设置 `requireOriginalMethod: true`。不得把此配置、�
 
 ## 接入契约
 
+### 根主页资料接口候选（2026-10-21，尚未上线）
+
+`GET /account/api/profile` 返回当前根会话本人的
+`{user:{id,username,email,displayName,emailVerified,updatedAt}}`。
+`PATCH /account/api/profile` 仅接受 `displayName`、`email`、
+`expectedUpdatedAt` 和可选 `currentPassword`；修改邮箱必须确认当前密码，
+邮箱变更后保持未验证。显示名称为 1–80 个 Unicode 码点，不含控制字符。
+用户名、稳定用户 ID、角色与服务授权都不能由该接口修改。
+会话及版本在事务内重新校验，增量 `identity_profile_events` 只记字段名与时间，
+失败整体回滚；基础身份版本仍为 1，不合并或重置业务数据。
+
+根 `/` 将作为任何有效账号的主页返回目标，不要求旅行授权；服务路径仍分别
+验证对应授权。候选服务入口为 `/travel/`、`/travel_dev/`，应与网关切换协调发布。
+
 - `/account/`：统一账户页面，登录、注册、退出和改密；注册只需用户名、邮箱和密码，
   暂不验证邮箱。新账号为普通成员，默认只开通正式旅行规划；其他服务由 Status 授权。
 - `POST /account/api/register`：仅接受 username/email/password，成功为 201 并建立根会话。
