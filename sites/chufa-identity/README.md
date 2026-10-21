@@ -11,7 +11,7 @@ Nginx 客户端还设置 `requireOriginalMethod: true`。不得把此配置、�
 
 ## 接入契约
 
-### 根主页资料接口候选（2026-10-21，尚未上线）
+### 本人资料接口（2026-10-22 JST 已上线）
 
 `GET /account/api/profile` 返回当前根会话本人的
 `{user:{id,username,email,displayName,emailVerified,updatedAt}}`。
@@ -22,8 +22,10 @@ Nginx 客户端还设置 `requireOriginalMethod: true`。不得把此配置、�
 会话及版本在事务内重新校验，增量 `identity_profile_events` 只记字段名与时间，
 失败整体回滚；基础身份版本仍为 1，不合并或重置业务数据。
 
-根 `/` 将作为任何有效账号的主页返回目标，不要求旅行授权；服务路径仍分别
-验证对应授权。候选服务入口为 `/travel/`、`/travel_dev/`，应与网关切换协调发布。
+本接口已在 `registration-20261021T152425Z-452652c6d0f8` 上线，17 项合同测试与
+2 项 Linux 配置权限测试通过。根 `/` 可作为任何有效账号的主页返回目标，不要求
+旅行授权；服务路径仍验证对应授权。Dev `/travel_dev/` 已实际启用；正式 `/travel/`
+仍临时跳回原 `/` 旅行站，正式根主页替换待本次明确审批后执行，不能宣称已完成。
 
 - `/account/`：统一账户页面，登录、注册、退出和改密；注册只需用户名、邮箱和密码，
   暂不验证邮箱。新账号为普通成员，默认只开通正式旅行规划；其他服务由 Status 授权。
