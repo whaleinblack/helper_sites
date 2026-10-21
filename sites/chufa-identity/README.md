@@ -11,6 +11,21 @@ Nginx 客户端还设置 `requireOriginalMethod: true`。不得把此配置、�
 
 ## 接入契约
 
+### 项目邀请资格（2026-10-22 JST 独立修复）
+
+`GET /internal/user?service=agents&purpose=project-invite&username=...`
+或单独 `id=...` 仅供已验证项目管理权限的协调平台调用。中央客户端必须同时
+持有 `agents`、`userLookup: true`、`inviteLookup: true`；不增加任何用户授权。
+查询仅匹配真实登录用户名（大小写不敏感）或稳定 ID（精确），不匹配昵称、邮箱，
+拒绝批量、重复、混合及未知查询字段。成功只返回 `id/username/role`。
+
+错误明确区分 `USER_NOT_FOUND` (404)、`APP_ACCESS_REQUIRED`、
+`ACCOUNT_DISABLED`、`PASSWORD_CHANGE_REQUIRED` (403)。客户端范围不符为
+`CLIENT_SCOPE_REQUIRED` (403)，不能解释成目标用户没有授权。调用方将配置鉴权、
+超时和服务故障反馈为身份服务不可用。普通不带 `purpose` 的精确查找维持原行为，
+Drive 元数据仍仅有 ID 和用户名，登录、Agent 赞助与强制改密规则保持不变。
+资格查询不写数据库，也不缓存账号状态；没有替任何现有用户改名、改密或授予权限。
+
 ### 本人资料接口（2026-10-22 JST 已上线）
 
 `GET /account/api/profile` 返回当前根会话本人的
@@ -25,7 +40,7 @@ Nginx 客户端还设置 `requireOriginalMethod: true`。不得把此配置、�
 本接口已在 `registration-20261021T152425Z-452652c6d0f8` 上线，17 项合同测试与
 2 项 Linux 配置权限测试通过。根 `/` 可作为任何有效账号的主页返回目标，不要求
 旅行授权；服务路径仍验证对应授权。Dev `/travel_dev/` 已实际启用；正式 `/travel/`
-仍临时跳回原 `/` 旅行站，正式根主页替换待本次明确审批后执行，不能宣称已完成。
+已实际启用，根主页替换也已获用户明确批准并完成。后续客户端视觉更新独立发布。
 
 - `/account/`：统一账户页面，登录、注册、退出和改密；注册只需用户名、邮箱和密码，
   暂不验证邮箱。新账号为普通成员，默认只开通正式旅行规划；其他服务由 Status 授权。
