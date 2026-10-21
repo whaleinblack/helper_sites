@@ -69,6 +69,23 @@ export class IdentityStore {
     return row?{id:row.id,username:row.username,role:row.role,passwordChangeRequired:false,grants:[service]}:null;
   }
 
+  inviteeEligibility({id: userId,username}) {
+    const invalid={status:400,code:'USER_LOOKUP_INVALID'};
+    if((userId!==null)===(username!==null))return invalid;
+    const value=userId??username;
+    if(typeof value!=='string'||!value||value.length>320||/[\u0000-\u001f\u007f]/u.test(value))return invalid;
+    // An immutable ID is exact; a username follows the same case-insensitive
+    // matching as login. Display names and email addresses are not identities.
+    const row=userId!==null
+      ?this.db.prepare('SELECT id,username,role,status,password_change_required FROM users WHERE id=?').get(value)
+      :this.db.prepare('SELECT id,username,role,status,password_change_required FROM users WHERE username=? COLLATE NOCASE').get(value.normalize('NFC').trim());
+    if(!row)return {status:404,code:'USER_NOT_FOUND'};
+    if(row.status!=='active')return {status:403,code:'ACCOUNT_DISABLED'};
+    if(!this.db.prepare("SELECT 1 FROM identity_grants WHERE user_id=? AND service='agents'").get(row.id))return {status:403,code:'APP_ACCESS_REQUIRED'};
+    if(row.password_change_required===1)return {status:403,code:'PASSWORD_CHANGE_REQUIRED'};
+    return {status:200,user:{id:row.id,username:row.username,role:row.role}};
+  }
+
   ownProfile(token) {
     const session=this.session(token);
     if(!session)throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED',status:401});

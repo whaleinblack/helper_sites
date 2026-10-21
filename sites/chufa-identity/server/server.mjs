@@ -24,12 +24,21 @@ export function createIdentityServer({store,clients,origin='https://chufa.wang'}
       if(url.pathname.startsWith('/internal/')) {
         const client=clients.find(c=>equal(req.headers.authorization,`Bearer ${c.token}`));
         const service=url.searchParams.get('service');
-        if(!client || !client.services.includes(service)) return write(res,403,{code:'FORBIDDEN'});
+        const invitationLookup=url.pathname==='/internal/user'&&url.searchParams.has('purpose');
+        if(!client || !client.services.includes(service)) return write(res,403,{code:invitationLookup?'CLIENT_SCOPE_REQUIRED':'FORBIDDEN'});
         const originalMethod=req.headers['x-original-method'];
         if(client.requireOriginalMethod && !/^[A-Z]+$/.test(originalMethod||'')) return write(res,403,{code:'INVALID_ORIGINAL_METHOD'});
         if(originalMethod && !['GET','HEAD','OPTIONS'].includes(originalMethod)
           && (req.headers.origin!==origin || req.headers['sec-fetch-site']==='cross-site')) return write(res,403,{code:'INVALID_ORIGIN'});
         if(url.pathname==='/internal/user') {
+          if(invitationLookup) {
+            if(service!=='agents'||!client.userLookup||!client.inviteLookup)return write(res,403,{code:'CLIENT_SCOPE_REQUIRED'});
+            if(req.method!=='GET')return write(res,405,{code:'METHOD'});
+            const allowed=new Set(['service','purpose','id','username']);
+            if(url.searchParams.get('purpose')!=='project-invite'||[...url.searchParams.keys()].some(key=>!allowed.has(key)||url.searchParams.getAll(key).length!==1))return write(res,400,{code:'USER_LOOKUP_INVALID'});
+            const result=store.inviteeEligibility({id:url.searchParams.get('id'),username:url.searchParams.get('username')});
+            return result.user?write(res,200,{user:result.user}):write(res,result.status,{code:result.code});
+          }
           if(!client.userLookup || req.method!=='GET')return write(res,403,{code:'FORBIDDEN'});
           const user=store.serviceUser({id:url.searchParams.get('id'),username:url.searchParams.get('username'),service});
           const result=user&&service==='drive'?{id:user.id,username:user.username}:user;
