@@ -2,7 +2,7 @@ const $=id=>document.getElementById(id);
 const routes={agents:['Agent 协作平台','/agents/'],production:['旅行规划','/'],development:['开发站旅行规划','/dev/'],drive:['我的网盘','/drive/'],status:['运维后台','/status/'], 'photo-admin':['摄影管理','/photo/status/'],'live-admin':['直播管理','/live/status/']};
 const adminOnly=new Set(['status','photo-admin','live-admin']);
 // Return-to paths by service; the first (most specific) prefix wins, `/` itself is the travel planner.
-const returnPrefixes=[['/dev/status/','status'],['/photo/status/','photo-admin'],['/live/status/','live-admin'],['/status/','status'],['/agents/','agents'],['/drive/','drive'],['/dev/','development']];
+const returnPrefixes=[['/travel_dev/status/','status'],['/dev/status/','status'],['/photo/status/','photo-admin'],['/live/status/','live-admin'],['/status/','status'],['/agents/','agents'],['/drive/','drive'],['/travel_dev/','development'],['/travel/','production'],['/dev/','development']];
 const errors={BAD_CREDENTIALS:'账号或密码不正确，请使用你的出发网统一账号。',RATE_LIMITED:'尝试次数过多，请稍后再试。',PASSWORD_CHANGE_FAILED:'修改未成功，请核对当前密码与新密码要求。',IDENTITY_UNAVAILABLE:'账号服务暂时不可用，请稍后重试。',
   USERNAME_INVALID:'用户名需为 3–32 位英文字母、数字或 . _ -，并以字母或数字开头。',EMAIL_INVALID:'邮箱格式不正确，请检查后重试。',PASSWORD_WEAK:'密码至少 8 个字符，并包含大写字母、小写字母、数字、符号中的任意三类。',
   ACCOUNT_EXISTS:'该用户名或邮箱已被注册，请直接登录，或换一个用户名 / 邮箱。',REGISTRATION_INVALID:'注册信息不完整，请刷新页面后重试。',INVALID_ORIGIN:'请求来源无效，请从出发网页面重新打开账户页。'};

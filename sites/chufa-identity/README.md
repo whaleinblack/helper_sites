@@ -46,3 +46,10 @@ Nginx 客户端还设置 `requireOriginalMethod: true`。不得把此配置、�
 
 账户库与私有配置单独每日备份，现有项目备份不能替代此备份。每日备份位于服务器
 私有目录，不提供公开下载。此项目没有离线可分发的账户数据版本。
+
+替换私有配置必须保留原 UID、GID 和 mode，使用 `deploy/private_config.py` 的原子
+替换方法；私有备份的 root/0600 元数据不得直接套回运行配置。发布与回滚均须以
+`chufa-identity` 服务用户验证配置可读、候选源码可遍历、数据库可用后再重启，随后
+检查真实 HTTP 健康。Linux 回归：在 deploy 目录运行
+`python3 -m unittest test_private_config.py`。不允许仅用 root 可读或 systemd active
+作为就绪证明。
