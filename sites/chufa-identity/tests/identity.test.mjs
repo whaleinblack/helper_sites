@@ -18,12 +18,60 @@ async function fixture() {
  db.prepare('INSERT INTO users VALUES (?,?,?,?,?,?,0,NULL,NULL)').run('p','preview','preview@example.invalid','admin','active',await passwordHash('Preview-Test-123'));
  for(const scope of ['drive','status','photo-admin','live-admin'])db.prepare('INSERT INTO identity_grants VALUES (?,?)').run('p',scope);
  const store=new IdentityStore(path),key='t'.repeat(48);
- const server=createIdentityServer({store,clients:[{token:key,services:['drive','status','photo-admin']},{token:'n'.repeat(48),services:['status'],requireOriginalMethod:true}],origin:'https://chufa.wang'});
+ const server=createIdentityServer({store,clients:[{token:key,services:['drive','status','photo-admin']},{token:'d'.repeat(48),services:['drive'],userLookup:true},{token:'a'.repeat(48),services:['agents'],userLookup:true},{token:'n'.repeat(48),services:['status'],requireOriginalMethod:true}],origin:'https://chufa.wang'});
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const base=`http://127.0.0.1:${server.address().port}`;
  return {db,store,key,base,close:async()=>{await new Promise(r=>server.close(r));store.close();db.close();rmSync(dir,{recursive:true,force:true});}};
 }
 const post=(f,path,body,cookie)=>fetch(f.base+path,{method:'POST',headers:{Origin:'https://chufa.wang','Content-Type':'application/json',...(cookie?{Cookie:cookie}:{})},body:JSON.stringify(body)});
+
+function signupSchema(f) {
+ for(const [name,type] of [['email_verified_at','TEXT'],['created_at','TEXT'],['profile_json','TEXT'],['flags_json','TEXT'],['assistant_turn_daily_limit','INTEGER'],['assistant_route_daily_limit','INTEGER'],['assistant_weather_daily_limit','INTEGER']])f.db.exec(`ALTER TABLE users ADD COLUMN ${name} ${type}`);
+}
+
+test('public signup creates only a normal unverified account with an isolated production grant and root session',async()=>{
+ const f=await fixture();try{
+  signupSchema(f);
+  const r=await post(f,'/account/api/register',{username:'new-member',email:'New@Example.invalid',password:'Member-Test-123'});
+  assert.equal(r.status,201);const body=await r.json();
+  assert.equal(body.user.role,'member');assert.deepEqual(body.user.grants,['production']);
+  assert.equal(body.user.email,'new@example.invalid');
+  assert.equal(f.db.prepare('SELECT email_verified_at FROM users WHERE id=?').get(body.user.id).email_verified_at,null);
+  const cookie=r.headers.get('set-cookie');assert.match(cookie,/Path=\/; HttpOnly; Secure; SameSite=Lax/);
+  assert.equal((await f.store.login('new@example.invalid','Member-Test-123')).user.id,body.user.id);
+  assert.equal((await post(f,'/account/api/register',{username:'NEW-MEMBER',email:'other@example.invalid',password:'Member-Test-123'})).status,409);
+  assert.equal((await post(f,'/account/api/register',{username:'another',email:'NEW@example.invalid',password:'Member-Test-123'})).status,409);
+  await post(f,'/account/api/logout',{},cookie.split(';')[0]);
+  assert.equal((await(await fetch(f.base+'/account/api/session',{headers:{Cookie:cookie.split(';')[0]}})).json()).authenticated,false);
+ }finally{await f.close();}
+});
+
+test('signup rejects role/grant injection, malformed fields and cross-site registration without creating users',async()=>{
+ const f=await fixture();try{
+  signupSchema(f);const input={username:'member-two',email:'two@example.invalid',password:'Member-Test-123'};
+  for(const extra of [{role:'admin'},{grants:['status']},{services:['agents']},{email:'not-email'},{username:'../escape'},{password:'weak'}]){
+   const r=await post(f,'/account/api/register',{...input,...extra});assert.equal(r.status,400);
+  }
+  assert.equal((await fetch(f.base+'/account/api/register',{method:'POST',headers:{Origin:'https://other.invalid','Content-Type':'application/json'},body:JSON.stringify(input)})).status,403);
+  assert.equal(f.db.prepare('SELECT COUNT(*) AS n FROM users').get().n,1);
+ }finally{await f.close();}
+});
+
+test('Drive exact lookup returns only stable identity and honors grant, active state and private client scope',async()=>{
+ const f=await fixture();try{
+  const headers={Authorization:'Bearer '+'d'.repeat(48)};
+  const lookup=path=>fetch(f.base+path,{headers});
+  const found=await lookup('/internal/user?service=drive&username=preview');assert.equal(found.status,200);
+  assert.deepEqual(await found.json(),{user:{id:'p',username:'preview'}});
+  assert.equal((await lookup('/internal/user?service=drive')).status,404);
+  assert.equal((await lookup('/internal/user?service=drive&id=p&username=preview')).status,404);
+  assert.equal((await lookup('/internal/user?service=status&id=p')).status,403);
+  f.db.prepare("DELETE FROM identity_grants WHERE user_id='p' AND service='drive'").run();
+  assert.equal((await lookup('/internal/user?service=drive&id=p')).status,404);
+  f.db.prepare("INSERT INTO identity_grants VALUES ('p','drive')").run();f.db.prepare("UPDATE users SET status='disabled' WHERE id='p'").run();
+  assert.equal((await lookup('/internal/user?service=drive&id=p')).status,404);
+ }finally{await f.close();}
+});
 
 test('cookie parsing rejects ambiguity and injected non-token values',()=>{
  assert.equal(cookieToken('chufa_session=x'),null);
@@ -73,5 +121,26 @@ test('concurrent failed login attempts are limited before expensive verification
  const f=await fixture();try{
   const results=await Promise.all(Array.from({length:12},()=>post(f,'/account/api/login',{identifier:'preview',password:'wrong'})));
   assert.ok(results.filter(r=>r.status===429).length>=4);
+ }finally{await f.close();}
+});
+
+
+test('dedicated agents client reads only approved user metadata without session or password material',async()=>{
+ const f=await fixture();try{
+  f.db.prepare('INSERT INTO identity_grants VALUES (?,?)').run('p','agents');
+  const headers={Authorization:'Bearer '+'a'.repeat(48)};
+  const r=await fetch(f.base+'/internal/user?service=agents&username=preview',{headers});assert.equal(r.status,200);
+  const value=await r.json();assert.equal(value.user.id,'p');assert.deepEqual(value.user.grants,['agents']);assert.equal('password_hash' in value.user,false);assert.equal('email' in value.user,false);
+  assert.equal((await fetch(f.base+'/internal/user?service=drive&username=preview',{headers})).status,403);
+  assert.equal((await fetch(f.base+'/internal/user?service=drive&username=preview',{headers:{Authorization:'Bearer '+f.key}})).status,403);
+  f.db.prepare("DELETE FROM identity_grants WHERE user_id='p' AND service='agents'").run();assert.equal((await fetch(f.base+'/internal/user?service=agents&id=p',{headers})).status,404);
+  f.db.prepare('INSERT INTO identity_grants VALUES (?,?)').run('p','agents');f.db.prepare("UPDATE users SET status='disabled' WHERE id='p'").run();assert.equal((await fetch(f.base+'/internal/user?service=agents&id=p',{headers})).status,404);
+ }finally{await f.close();}
+});
+
+
+test('central account portal remains complete after agents integration',async()=>{
+ const f=await fixture();try{
+  for(const route of ['/account/','/account/app.js','/account/style.css']){const r=await fetch(f.base+route);assert.equal(r.status,200);assert.ok((await r.text()).length>50);}
  }finally{await f.close();}
 });

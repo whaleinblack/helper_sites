@@ -11,10 +11,16 @@ Nginx 客户端还设置 `requireOriginalMethod: true`。不得把此配置、�
 
 ## 接入契约
 
-- `/account/`：统一账户页面，登录、退出和改密；不开放自行注册。
+- `/account/`：统一账户页面，登录、注册、退出和改密；注册只需用户名、邮箱和密码，
+  暂不验证邮箱。新账号为普通成员，默认只开通正式旅行规划；其他服务由 Status 授权。
+- `POST /account/api/register`：仅接受 username/email/password，成功为 201 并建立根会话。
+  重名或重复邮箱返回 ACCOUNT_EXISTS；跨站写入、角色/权限注入和弱密码均拒绝。
 - `chufa_session`：根路径 HttpOnly/Secure/SameSite=Lax Cookie。所有服务共享同一
   中央会话记录，退出、停用、改密、降权即时影响各站点，按各操作的撤销策略执行。
 - `/internal/session?service=drive`：专用服务器客户端读取已授权的会话。
+- `/internal/user?service=drive&username=...` 或 `id=...`：专用客户端需开启
+  `userLookup: true`，只返回已开通网盘的有效账号 `{id, username}`，不列举用户，
+  不授予文件权限。Agent 平台的独立客户端保留原有最小元数据契约。
 - `/internal/check?service=...`：Nginx 内部子请求，成功为 204。
   必须清除客户端 Authorization 并由私有 Nginx 配置设置专用令牌；写请求传入真实
   原始 Method 和 Origin，跨站或缺失来源的管理写请求拒绝。
@@ -30,7 +36,9 @@ Nginx 客户端还设置 `requireOriginalMethod: true`。不得把此配置、�
 
 服务仅监听 127.0.0.1:4193。`deploy/` 提供 systemd 单元、每日私有备份和只生成候选
 文件的 Nginx 配置转换器。Nginx 转换要求原认证位置和数量准确匹配，否则停止。
-当前代码是待发布候选；是否已切换以迁移验收记录为准。
+共享身份服务已运行；本次注册、授权审计扩展和网盘查询仍为待发布候选。
+`identity_account_events` 为增量审计表，基础身份版本保持 1；部署中央服务后再启用
+新版 Status 写接口。失败回滚发布链接，不得用旧身份快照覆盖上线后的新用户写入。
 
 部署前应冻结写入，备份两个业务数据库、旧认证配置、网盘状态和当前发布链接；
 重新生成迁移候选并校验，再同步启用主站、Dev、网盘和管理入口。维护期间失败可
