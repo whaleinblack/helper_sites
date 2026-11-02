@@ -91,20 +91,21 @@ export class IdentityStore {
     if(!session)throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED',status:401});
     const row=this.db.prepare('SELECT * FROM users WHERE id=?').get(session.user.id);
     let profile={};try{const parsed=JSON.parse(row.profile_json||'{}');if(parsed&&typeof parsed==='object'&&!Array.isArray(parsed))profile=parsed;}catch{}
-    return {id:row.id,username:row.username,email:row.email,displayName:typeof profile.displayName==='string'?profile.displayName:row.username,emailVerified:!!row.email_verified_at,updatedAt:row.updated_at};
+    return {id:row.id,username:row.username,email:row.email,displayName:typeof profile.displayName==='string'?profile.displayName:row.username,emailVerified:row.email!==null&&!!row.email_verified_at,updatedAt:row.updated_at};
   }
 
   async updateOwnProfile(token,input) {
     const reject=(code,status=400)=>{throw Object.assign(Error(code),{code,status});};
     if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(key=>!['displayName','email','expectedUpdatedAt','currentPassword'].includes(key)))reject('PROFILE_INVALID');
-    if(typeof input.displayName!=='string'||typeof input.email!=='string'||typeof input.expectedUpdatedAt!=='string'||(input.currentPassword!==undefined&&typeof input.currentPassword!=='string'))reject('PROFILE_INVALID');
-    const displayName=input.displayName.normalize('NFC').trim(),email=input.email.normalize('NFC').trim().toLowerCase();
+    if(typeof input.displayName!=='string'||(input.email!==null&&typeof input.email!=='string')||typeof input.expectedUpdatedAt!=='string'||(input.currentPassword!==undefined&&typeof input.currentPassword!=='string'))reject('PROFILE_INVALID');
+    const displayName=input.displayName.normalize('NFC').trim(),email=input.email===null?null:(input.email.normalize('NFC').trim().toLowerCase()||null);
     if(!displayName||[...displayName].length>80||/[\u0000-\u001f\u007f]/.test(displayName))reject('PROFILE_INVALID');
-    if(email.length>254||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))reject('EMAIL_INVALID');
+    if(email!==null&&(email.length>254||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)))reject('EMAIL_INVALID');
     const session=this.session(token);if(!session)reject('AUTH_REQUIRED',401);
     if(session.user.passwordChangeRequired)reject('PASSWORD_CHANGE_REQUIRED',403);
     const before=this.db.prepare('SELECT * FROM users WHERE id=?').get(session.user.id);
-    const emailChanged=email!==String(before.email).toLowerCase();
+    if(email===null&&before.email!==null)reject('EMAIL_INVALID');
+    const emailChanged=email!==(before.email===null?null:String(before.email).toLowerCase());
     if(emailChanged){
       if(!input.currentPassword)reject('PROFILE_PASSWORD_REQUIRED');
       if(!await verifyPassword(input.currentPassword,before.password_hash))reject('BAD_CREDENTIALS',401);

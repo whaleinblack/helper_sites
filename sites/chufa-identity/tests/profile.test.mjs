@@ -84,3 +84,31 @@ test('session revocation during password verification and audit failures roll ba
     assert.equal(f.store.ownProfile(second.token).displayName,'person');assert.equal(f.store.ownProfile(second.token).email,user.email);
   }finally{await f.close();}
 });
+
+test('an account without email can edit its name and later set an unverified email with password confirmation',async()=>{
+  const f=await fixture();try{
+    f.db.prepare("UPDATE users SET email=NULL,email_verified_at=NULL WHERE id='p'").run();
+    const before=f.store.ownProfile(f.token);assert.equal(before.email,null);assert.equal(before.emailVerified,false);
+    const login=await f.store.login('person','Profile-Test-123');assert.ok(login,'username login remains available');
+    const response=await patch(f,{displayName:'Without Email',email:null,expectedUpdatedAt:before.updatedAt});assert.equal(response.status,200);
+    const current=(await response.json()).user;assert.equal(current.email,null);assert.equal(current.displayName,'Without Email');
+    const edit={displayName:current.displayName,email:'new@example.invalid',expectedUpdatedAt:current.updatedAt};
+    assert.equal((await patch(f,edit)).status,400);
+    assert.equal((await patch(f,{...edit,currentPassword:'incorrect'})).status,401);
+    assert.equal((await patch(f,{...edit,email:'other@example.invalid',currentPassword:'Profile-Test-123'})).status,409);
+    const saved=await patch(f,{...edit,email:'NEW@example.invalid',currentPassword:'Profile-Test-123'});assert.equal(saved.status,200);
+    const result=(await saved.json()).user;assert.equal(result.id,before.id);assert.equal(result.email,'new@example.invalid');assert.equal(result.emailVerified,false);
+    assert.equal((await patch(f,{displayName:result.displayName,email:null,expectedUpdatedAt:result.updatedAt,currentPassword:'Profile-Test-123'})).status,400);
+    assert.equal(f.store.ownProfile(f.token).email,'new@example.invalid');
+  }finally{await f.close();}
+});
+
+test('public registration still rejects missing/null/blank/invalid email without creating users',async()=>{
+  const f=await fixture();try{
+    const count=f.db.prepare('SELECT count(*) AS n FROM users').get().n;
+    for(const email of [undefined,null,'','  ','invalid']){
+      const response=await fetch(f.base+'/account/api/register',{method:'POST',headers:{Origin:'https://chufa.wang','Content-Type':'application/json'},body:JSON.stringify({username:'public-no-mail',email,password:'Public-Test-123'})});assert.equal(response.status,400);
+    }
+    assert.equal(f.db.prepare('SELECT count(*) AS n FROM users').get().n,count);
+  }finally{await f.close();}
+});
