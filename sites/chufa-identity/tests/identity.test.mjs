@@ -18,7 +18,7 @@ async function fixture() {
  db.prepare('INSERT INTO users VALUES (?,?,?,?,?,?,0,NULL,NULL)').run('p','preview','preview@example.invalid','admin','active',await passwordHash('Preview-Test-123'));
  for(const scope of ['drive','status','photo-admin','live-admin'])db.prepare('INSERT INTO identity_grants VALUES (?,?)').run('p',scope);
  const store=new IdentityStore(path),key='t'.repeat(48);
- const server=createIdentityServer({store,clients:[{token:key,services:['drive','status','photo-admin']},{token:'d'.repeat(48),services:['drive'],userLookup:true},{token:'a'.repeat(48),services:['agents'],userLookup:true},{token:'n'.repeat(48),services:['status'],requireOriginalMethod:true}],origin:'https://chufa.wang'});
+ const server=createIdentityServer({store,clients:[{token:key,services:['drive','status','photo-admin','camp','mountain']},{token:'d'.repeat(48),services:['drive'],userLookup:true},{token:'a'.repeat(48),services:['agents'],userLookup:true},{token:'n'.repeat(48),services:['status'],requireOriginalMethod:true}],origin:'https://chufa.wang'});
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const base=`http://127.0.0.1:${server.address().port}`;
  return {db,store,key,base,close:async()=>{await new Promise(r=>server.close(r));store.close();db.close();rmSync(dir,{recursive:true,force:true});}};
@@ -142,5 +142,22 @@ test('dedicated agents client reads only approved user metadata without session 
 test('central account portal remains complete after agents integration',async()=>{
  const f=await fixture();try{
   for(const route of ['/account/','/account/app.js','/account/style.css']){const r=await fetch(f.base+route);assert.equal(r.status,200);assert.ok((await r.text()).length>50);}
+ }finally{await f.close();}
+});
+
+test('independent map grants gate HTTP checks, revocation and disabled or password-pending accounts',async()=>{
+ const f=await fixture();try{
+  const {token}=await f.store.login('preview','Preview-Test-123');
+  const headers={Cookie:'chufa_session='+token,Authorization:'Bearer '+f.key};
+  const check=scope=>fetch(f.base+'/internal/check?service='+scope,{headers});
+  for(const scope of ['camp','mountain'])assert.equal((await check(scope)).status,403);
+  f.db.prepare("INSERT INTO identity_grants VALUES ('p','camp')").run();
+  assert.equal((await check('camp')).status,204);assert.equal((await check('mountain')).status,403);
+  f.db.prepare("INSERT INTO identity_grants VALUES ('p','mountain')").run();
+  assert.equal((await check('mountain')).status,204);
+  f.db.prepare("DELETE FROM identity_grants WHERE user_id='p' AND service='camp'").run();
+  assert.equal((await check('camp')).status,403);assert.equal((await check('mountain')).status,204);
+  f.db.prepare("UPDATE users SET password_change_required=1 WHERE id='p'").run();assert.equal((await check('mountain')).status,403);
+  f.db.prepare("UPDATE users SET status='disabled' WHERE id='p'").run();assert.equal((await check('mountain')).status,401);
  }finally{await f.close();}
 });

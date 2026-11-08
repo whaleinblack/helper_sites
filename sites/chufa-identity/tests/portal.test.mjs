@@ -51,3 +51,14 @@ test('external, credential-page, traversal and unknown return targets stay on th
     const p=portal(path);p.enter(member);assert.deepEqual(p.redirects,[],path);
   }
 });
+
+test('camp and mountain returns require independent explicit service grants',()=>{
+ for(const service of ['camp','mountain']){
+  const target='/'+service+'/?view=map#focus';
+  for(const user of [member,{...member,role:'admin'}, {...member,grants:[service],passwordChangeRequired:true}]){
+   const p=portal(target);p.enter(user);assert.deepEqual(p.redirects,[]);
+  }
+  const granted=portal(target);granted.enter({...member,grants:[service]});assert.deepEqual(granted.redirects,[target]);
+  const other=portal(target);other.enter({...member,grants:[service==='camp'?'mountain':'camp']});assert.deepEqual(other.redirects,[]);
+ }
+});

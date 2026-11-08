@@ -13,7 +13,7 @@ const STRINGS={
     signedAs:'已登录 · {name}',forcedChange:'请先修改临时密码，再访问其他服务。',invalidReturn:'返回地址不属于出发网服务，已停留在账户页面。',
     noGrant:'当前账号尚未开通「{service}」，下方列出了可以进入的服务。如需开通，请联系管理员。',passwordUpdated:'密码已更新，其他设备的旧登录已退出。',
     registered:'注册成功，已登录。',loggedOut:'已退出登录。',noServices:'暂未开通任何服务，请联系管理员。',generic:'暂时无法完成操作，请重试。',
-    services:{agents:'Agent 协作平台',production:'旅行规划',development:'开发站旅行规划',drive:'我的网盘',status:'运维后台','photo-admin':'摄影管理','live-admin':'直播管理'},
+    services:{mountain:'登山地图',camp:'星野露营',agents:'Agent 协作平台',production:'旅行规划',development:'开发站旅行规划',drive:'我的网盘',status:'运维后台','photo-admin':'摄影管理','live-admin':'直播管理'},
     errors:{BAD_CREDENTIALS:'账号或密码不正确，请使用你的出发网统一账号。',RATE_LIMITED:'尝试次数过多，请稍后再试。',PASSWORD_CHANGE_FAILED:'修改未成功，请核对当前密码与新密码要求。',IDENTITY_UNAVAILABLE:'账号服务暂时不可用，请稍后重试。',
       USERNAME_INVALID:'用户名需为 3–32 位英文字母、数字或 . _ -，并以字母或数字开头。',EMAIL_INVALID:'邮箱格式不正确，请检查后重试。',PASSWORD_WEAK:'密码至少 8 个字符，并包含大写字母、小写字母、数字、符号中的任意三类。',
       ACCOUNT_EXISTS:'该用户名或邮箱已被注册，请直接登录，或换一个用户名 / 邮箱。',REGISTRATION_INVALID:'注册信息不完整，请刷新页面后重试。',INVALID_ORIGIN:'请求来源无效，请从出发网页面重新打开账户页。'}},
@@ -29,7 +29,7 @@ const STRINGS={
     signedAs:'Signed in · {name}',forcedChange:'Change your temporary password before using other services.',invalidReturn:'The return address is not a Chufa service, so you stay on the account page.',
     noGrant:'This account does not have access to “{service}” yet. Services you can open are listed below; ask an administrator for access.',passwordUpdated:'Password updated. Older sign-ins on other devices were signed out.',
     registered:'Registration complete. You are signed in.',loggedOut:'Signed out.',noServices:'No services are enabled for this account yet. Ask an administrator.',generic:'Something went wrong. Please try again.',
-    services:{agents:'Agent workspace',production:'Travel Planner',development:'Travel Planner (preview)',drive:'Drive',status:'Operations console','photo-admin':'Photo admin','live-admin':'Live admin'},
+    services:{mountain:'Mountain map',camp:'Stargazing and camping',agents:'Agent workspace',production:'Travel Planner',development:'Travel Planner (preview)',drive:'Drive',status:'Operations console','photo-admin':'Photo admin','live-admin':'Live admin'},
     errors:{BAD_CREDENTIALS:'Incorrect account or password. Use your Chufa account.',RATE_LIMITED:'Too many attempts. Please try again later.',PASSWORD_CHANGE_FAILED:'Password not changed. Check your current password and the new password rules.',IDENTITY_UNAVAILABLE:'The account service is temporarily unavailable. Please try again.',
       USERNAME_INVALID:'Usernames are 3–32 letters, digits or . _ -, starting with a letter or digit.',EMAIL_INVALID:'That email address does not look right.',PASSWORD_WEAK:'Use at least 8 characters with three of: uppercase, lowercase, digits, symbols.',
       ACCOUNT_EXISTS:'That username or email is already registered. Sign in, or choose another username / email.',REGISTRATION_INVALID:'Registration details are incomplete. Refresh the page and try again.',INVALID_ORIGIN:'Invalid request origin. Reopen the account page from a Chufa page.'}},
@@ -38,11 +38,11 @@ function pref(key){try{return localStorage.getItem(key);}catch{return null;}}
 function setPref(key,value){try{localStorage.setItem(key,value);}catch{}}
 let locale=pref('planner-locale-source')==='manual'&&pref('planner-locale')==='en-US'?'en-US':'zh-CN';
 const t=(key,vars={})=>String(STRINGS[locale][key]??STRINGS['zh-CN'][key]??'').replace(/\{(\w+)\}/g,(_,name)=>vars[name]??'');
-const routes={agents:'/agents/',production:'/travel/',development:'/travel_dev/',drive:'/drive/',status:'/status/','photo-admin':'/photo/status/','live-admin':'/live/status/'};
+const routes={mountain:'/mountain/',camp:'/camp/',agents:'/agents/',production:'/travel/',development:'/travel_dev/',drive:'/drive/',status:'/status/','photo-admin':'/photo/status/','live-admin':'/live/status/'};
 const serviceName=scope=>STRINGS[locale].services[scope];
 const adminOnly=new Set(['status','photo-admin','live-admin']);
 // Return-to paths by service; the first (most specific) prefix wins, `/` itself is the travel planner.
-const returnPrefixes=[['/travel_dev/status/','status'],['/dev/status/','status'],['/photo/status/','photo-admin'],['/live/status/','live-admin'],['/status/','status'],['/agents/','agents'],['/drive/','drive'],['/travel_dev/','development'],['/travel/','production'],['/dev/','development']];
+const returnPrefixes=[['/mountain/','mountain'],['/camp/','camp'],['/travel_dev/status/','status'],['/dev/status/','status'],['/photo/status/','photo-admin'],['/live/status/','live-admin'],['/status/','status'],['/agents/','agents'],['/drive/','drive'],['/travel_dev/','development'],['/travel/','production'],['/dev/','development']];
 let errors=STRINGS[locale].errors;
 const params=new URLSearchParams(location.search);
 let current=null,registrationAvailable=false;

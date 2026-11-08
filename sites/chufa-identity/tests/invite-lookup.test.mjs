@@ -22,7 +22,13 @@ async function fixture(){
     {token:'a'.repeat(48),services:['agents'],userLookup:true},
     {token:'d'.repeat(48),services:['drive'],userLookup:true,inviteLookup:true},
   ]});
-  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  // Windows can assign a Fetch-forbidden port to listen(0). Retry only that
+  // transport allocation failure; an HTTP response (even 404) proves it is usable.
+  for(let attempt=0;;attempt++){
+    await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+    try{await fetch('http://127.0.0.1:'+server.address().port+'/__fixture_port_probe',{method:'HEAD'});break;}
+    catch(error){await new Promise(resolve=>server.close(resolve));if(error.cause?.message!=='bad port'||attempt>=9)throw error;}
+  }
   const base='http://127.0.0.1:'+server.address().port;
   const request=(query,token='i',method='GET')=>fetch(base+'/internal/user?service=agents&purpose=project-invite&'+query,{method,headers:{Authorization:'Bearer '+token.repeat(48)}});
   return {db,store,request,base,close:async()=>{await new Promise(resolve=>server.close(resolve));store.close();db.close();rmSync(dir,{recursive:true,force:true});}};
