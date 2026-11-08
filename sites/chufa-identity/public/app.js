@@ -42,7 +42,7 @@ const routes={mountain:'/mountain/',camp:'/camp/',agents:'/agents/',production:'
 const serviceName=scope=>STRINGS[locale].services[scope];
 const adminOnly=new Set(['status','photo-admin','live-admin']);
 // Return-to paths by service; the first (most specific) prefix wins, `/` itself is the travel planner.
-const returnPrefixes=[['/mountain/','mountain'],['/camp/','camp'],['/travel_dev/status/','status'],['/dev/status/','status'],['/photo/status/','photo-admin'],['/live/status/','live-admin'],['/status/','status'],['/agents/','agents'],['/drive/','drive'],['/travel_dev/','development'],['/travel/','production'],['/dev/','development']];
+const returnPrefixes=[['/sites/osaka-mountain-picker/','mountain'],['/sites/camp/','camp'],['/mountain/','mountain'],['/camp/','camp'],['/travel_dev/status/','status'],['/dev/status/','status'],['/photo/status/','photo-admin'],['/live/status/','live-admin'],['/status/','status'],['/agents/','agents'],['/drive/','drive'],['/travel_dev/','development'],['/travel/','production'],['/dev/','development']];
 let errors=STRINGS[locale].errors;
 const params=new URLSearchParams(location.search);
 let current=null,registrationAvailable=false;

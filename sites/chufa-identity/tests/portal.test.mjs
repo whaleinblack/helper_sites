@@ -62,3 +62,10 @@ test('camp and mountain returns require independent explicit service grants',()=
   const other=portal(target);other.enter({...member,grants:[service==='camp'?'mountain':'camp']});assert.deepEqual(other.redirects,[]);
  }
 });
+
+test('protected legacy map aliases preserve login return and require the same independent grant',()=>{
+ for(const [path,scope]of[['/sites/camp/index.html','camp'],['/sites/osaka-mountain-picker/index.html','mountain']]){
+  const denied=portal(path);denied.enter(member);assert.deepEqual(denied.redirects,[]);
+  const allowed=portal(path);allowed.enter({...member,grants:[scope]});assert.deepEqual(allowed.redirects,[path]);
+ }
+});
